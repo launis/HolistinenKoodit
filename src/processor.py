@@ -14,14 +14,14 @@ class AIProcessor:
     def get_available_models(self):
         """Hakee saatavilla olevat mallit."""
         if not self.api_key:
-            return ["gemini-pro", "gemini-1.5-flash"] # Fallback
+            return ["gemini-flash-latest", "gemini-1.5-flash", "gemini-pro"] # Fallback
         
         try:
             models = []
             for m in genai.list_models():
                 if 'generateContent' in m.supported_generation_methods:
                     models.append(m.name.replace("models/", ""))
-            return models if models else ["gemini-pro", "gemini-1.5-flash"]
+            return models if models else ["gemini-flash-latest", "gemini-1.5-flash", "gemini-pro"]
         except Exception as e:
             return [f"Virhe: {str(e)}", "gemini-pro"]
 
@@ -37,12 +37,29 @@ class AIProcessor:
             return f"Virhe luettaessa tiedostoa: {str(e)}"
 
     def _read_docx(self, file_path_or_obj):
-        """Lukee tekstin DOCX-tiedostosta."""
+        """Lukee tekstin DOCX-tiedostosta, mukaan lukien taulukot."""
         try:
             doc = docx.Document(file_path_or_obj)
             text = []
+            
+            # Yksinkertainen tapa: lue kaikki kappaleet
+            # Mutta jos dokumentissa on taulukoita, ne jäävät väliin pelkällä doc.paragraphs:lla
+            # Joten luetaan "block" kerrallaan jos mahdollista, tai iteroidaan molemmat.
+            # python-docx ei tue täydellistä järjestystä helposti, mutta luetaan taulukot lopuksi tai yritetään lomittaa.
+            # Yksinkertaisin parannus: Luetaan kappaleet JA taulukot.
+            
             for para in doc.paragraphs:
                 text.append(para.text)
+            
+            # Lue myös taulukot
+            for table in doc.tables:
+                for row in table.rows:
+                    row_text = []
+                    for cell in row.cells:
+                        row_text.append(cell.text.strip())
+                    # Yhdistä rivin solut | -merkillä jotta rakenne säilyy edes vähän
+                    text.append(" | ".join(row_text))
+            
             return "\n".join(text)
         except Exception as e:
             return f"Virhe luettaessa DOCX-tiedostoa: {str(e)}"

@@ -32,14 +32,16 @@ with st.sidebar:
         available_models = processor.get_available_models()
         # Suositaan tiettyjä malleja oletuksena
         default_index = 0
-        if "gemini-1.5-flash" in available_models:
+        if "gemini-flash-latest" in available_models:
+            default_index = available_models.index("gemini-flash-latest")
+        elif "gemini-1.5-flash" in available_models:
             default_index = available_models.index("gemini-1.5-flash")
         elif "gemini-pro" in available_models:
             default_index = available_models.index("gemini-pro")
             
         model_selection = st.selectbox("Valitse malli", available_models, index=default_index)
     else:
-        model_selection = st.selectbox("Valitse malli", ["gemini-pro", "gemini-1.5-flash"])
+        model_selection = st.selectbox("Valitse malli", ["gemini-flash-latest", "gemini-1.5-flash", "gemini-pro"])
     
     st.subheader("Agentit")
     try:
@@ -64,19 +66,28 @@ with col3:
 
 uploaded_files = [f for f in [historia_file, lopputuote_file, reflektio_file] if f is not None]
 
-# Lataa Pääarviointikehote
-try:
-    # Oletetaan että tiedosto on samassa kansiossa tai ylempänä
-    prompt_path = os.path.join(os.getcwd(), "Pääarviointikehote.docx")
-    if os.path.exists(prompt_path):
-        system_instructions = processor._read_docx(prompt_path)
-        st.success("Pääarviointikehote ladattu onnistuneesti.")
-    else:
-        system_instructions = ""
-        st.warning(f"Pääarviointikehote.docx ei löytynyt polusta: {prompt_path}")
-except Exception as e:
-    system_instructions = ""
-    st.error(f"Virhe ladattaessa Pääarviointikehotetta: {str(e)}")
+# Lataa Pääarviointikehote (Mahdollisuus ladata uusi versio UI:sta)
+st.subheader("Pääarviointikehote")
+custom_prompt_file = st.file_uploader("Lataa uusi Pääarviointikehote (DOCX)", type=['docx'])
+
+system_instructions = ""
+if custom_prompt_file:
+    try:
+        system_instructions = processor._read_docx(custom_prompt_file)
+        st.success("✅ Käytetään ladattua Pääarviointikehotetta.")
+    except Exception as e:
+        st.error(f"Virhe ladattaessa tiedostoa: {str(e)}")
+else:
+    # Fallback: Oletustiedosto
+    try:
+        prompt_path = os.path.join(os.getcwd(), "Pääarviointikehote.docx")
+        if os.path.exists(prompt_path):
+            system_instructions = processor._read_docx(prompt_path)
+            st.info(f"ℹ️ Käytetään oletuskehotetta (löytyi kansiosta).")
+        else:
+            st.warning(f"⚠️ Pääarviointikehote.docx ei löytynyt kansiosta, eikä uutta ladattu.")
+    except Exception as e:
+        st.error(f"Virhe ladattaessa oletuskehotetta: {str(e)}")
 
 # Määritellään orkestrointivaiheet
 ORCHESTRATION_STEPS = [
