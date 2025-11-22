@@ -1,0 +1,17 @@
+[
+    {
+        "name": "Analyytikko",
+        "role": "Analysoi keskusteluhistoriaa ja etsii keskeiset teemat.",
+        "prompt_template": "Olet analyytikko. Lue oheinen keskusteluhistoria ja tiivistä keskeiset teemat. Tiedostot: {files}"
+    },
+    {
+        "name": "Kriitikko",
+        "role": "Arvioi lopputuotetta kriittisesti.",
+        "prompt_template": "Olet kriitikko. Arvioi oheista lopputuotetta suhteessa reflektiodokumenttiin. Tiedostot: {files}"
+    },
+    {
+        "name": "Yhteenvetäjä",
+        "role": "Kokoaa havainnot yhteen.",
+        "prompt_template": "Olet yhteenvetäjä. Tee yhteenveto edellisten agenttien havainnoista. Tiedostot: {files}"
+    }
+]
