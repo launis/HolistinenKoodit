@@ -75,6 +75,61 @@ class AIProcessor:
             stringio = io.StringIO(uploaded_file.getvalue().decode("utf-8"))
             return stringio.read()
 
+    def parse_prompt_modules(self, file_path_or_obj):
+        """
+        Parsii Pääarviointikehotteen osiin:
+        1. Yleiset säännöt (teksti ennen VAIHE 1:stä)
+        2. Vaiheet (VAIHE 1, VAIHE 2, jne.)
+        
+        Palauttaa: (common_rules, phases_dict)
+        """
+        try:
+            doc = docx.Document(file_path_or_obj)
+            common_rules = []
+            phases = {}
+            current_phase = None
+            
+            for para in doc.paragraphs:
+                text = para.text.strip()
+                if not text:
+                    continue
+                    
+                # Tunnista vaiheen vaihto
+                # Etsitään "VAIHE X:" tai "VAIHE X " alussa
+                if text.upper().startswith("VAIHE"):
+                    # Yritetään tunnistaa onko kyseessä otsikko
+                    # Esim. "VAIHE 1: ALUSTUS"
+                    parts = text.split(":")
+                    if len(parts) > 1 or len(text) < 50: # Oletetaan että otsikko on lyhyt tai sisältää kaksoispisteen
+                        # Otetaan talteen avain, esim "VAIHE 1"
+                        # Jos kaksoispiste, otetaan alku. Jos ei, otetaan kaksi ekaa sanaa (VAIHE 1)
+                        if ":" in text:
+                            phase_key = parts[0].strip().upper()
+                        else:
+                            words = text.split()
+                            if len(words) >= 2:
+                                phase_key = f"{words[0]} {words[1]}".upper()
+                            else:
+                                phase_key = text.upper()
+                        
+                        current_phase = phase_key
+                        phases[current_phase] = [text] # Aloita uusi lista otsikolla
+                        continue
+
+                if current_phase:
+                    phases[current_phase].append(text)
+                else:
+                    common_rules.append(text)
+            
+            # Muunna listat tekstiksi
+            common_text = "\n".join(common_rules)
+            phases_text = {k: "\n".join(v) for k, v in phases.items()}
+            
+            return common_text, phases_text
+            
+        except Exception as e:
+            return f"Virhe parsiessa kehotetta: {str(e)}", {}
+
     def process_agent(self, agent_config, uploaded_files, model_name="gemini-pro"):
         """
         Suorittaa tekoälyajon yhdelle agentille.

@@ -1,47 +1,53 @@
 import streamlit as st
 import json
 import os
-import google.generativeai as genai
-from dotenv import load_dotenv
-from processor import AIProcessor
-
-# Lataa ympäristömuuttujat .env-tiedostosta
-load_dotenv()
+from llm_service import LLMService
+from data_handler import DataHandler, TextUpload
+from orchestrator import Orchestrator
+from context import AssessmentContext
 
 # Sivun asetukset
-st.set_page_config(page_title="Parviointikehote Agentit", layout="wide")
+st.set_page_config(page_title="Holistinen Mestaruus 3.0", layout="wide")
+st.title("🤖 Holistinen Mestaruus 3.0")
 
-st.title("🤖 Parviointikehote - Agenttien Ajo")
+# --- ALUSTUS (Service Layer & Data Layer) ---
+try:
+    llm_service = LLMService()
+    data_handler = DataHandler()
+    orchestrator = Orchestrator(llm_service, data_handler)
+    api_key_configured = True
+except ValueError:
+    st.warning("API-avain puuttuu .env-tiedostosta. Syötä se sivupalkkiin.")
+    api_key_configured = False
+    # Fallback: luodaan dummy-palvelut jotta UI ei kaadu, mutta estetään ajot
+    class DummyLLM:
+        def get_available_models(self): return ["gemini-1.5-flash"]
+        def generate_response(self, p, m): return "VIRHE: API-avain puuttuu."
+    llm_service = DummyLLM()
+    data_handler = DataHandler()
+    orchestrator = Orchestrator(llm_service, data_handler)
 
-# Sivupalkki asetuksille
+# --- SIVUPALKKI (Configuration) ---
 with st.sidebar:
     st.header("Asetukset")
     
-    # Hae API-avain ympäristömuuttujista tai näytä tyhjä kenttä
-    default_api_key = os.getenv("GOOGLE_API_KEY", "")
-    api_key = st.text_input("Gemini API Key", value=default_api_key, type="password").strip()
-    
-    if not api_key:
-        st.warning("Syötä API-avain joko tähän tai .env-tiedostoon.")
-
-    # Alusta prosessori heti, jotta saadaan mallit
-    processor = AIProcessor(api_key=api_key)
-    
-    # Hae mallit dynaamisesti, jos avain on olemassa
-    if api_key:
-        available_models = processor.get_available_models()
-        # Suositaan tiettyjä malleja oletuksena
-        default_index = 0
-        if "gemini-flash-latest" in available_models:
-            default_index = available_models.index("gemini-flash-latest")
-        elif "gemini-1.5-flash" in available_models:
-            default_index = available_models.index("gemini-1.5-flash")
-        elif "gemini-pro" in available_models:
-            default_index = available_models.index("gemini-pro")
+    if not api_key_configured:
+        api_key = st.text_input("Gemini API Key", type="password").strip()
+        if api_key:
+            os.environ["GOOGLE_API_KEY"] = api_key
+            st.experimental_rerun()
             
-        model_selection = st.selectbox("Valitse malli", available_models, index=default_index)
-    else:
-        model_selection = st.selectbox("Valitse malli", ["gemini-flash-latest", "gemini-1.5-flash", "gemini-pro"])
+    # Mallin valinta
+    available_models = llm_service.get_available_models()
+    default_index = 0
+    if "gemini-2.5-flash" in available_models:
+        default_index = available_models.index("gemini-2.5-flash")
+    elif "gemini-1.5-flash-latest" in available_models:
+        default_index = available_models.index("gemini-1.5-flash-latest")
+    elif "gemini-1.5-flash" in available_models:
+        default_index = available_models.index("gemini-1.5-flash")
+        
+    model_selection = st.selectbox("Valitse malli", available_models, index=default_index)
     
     st.subheader("Agentit")
     try:
@@ -52,20 +58,10 @@ with st.sidebar:
         st.error("agents.json ei löytynyt!")
         agents = []
 
-# Pääalue
-# Pääalue
+# --- PÄÄALUE (Presentation Layer) ---
+
 st.header("1. Lataa tiedostot")
 col1, col2, col3 = st.columns(3)
-
-class TextUpload:
-    """Apuluokka tekstin käsittelyyn kuin se olisi ladattu tiedosto."""
-    def __init__(self, text, name="Liitetty_historia.txt"):
-        self.text = text
-        self.name = name
-        self.type = "text/plain"
-    
-    def getvalue(self):
-        return self.text.encode("utf-8")
 
 with col1:
     st.markdown("### Keskusteluhistoria")
@@ -88,146 +84,122 @@ with col3:
 
 uploaded_files = [f for f in [historia_file, lopputuote_file, reflektio_file] if f is not None]
 
-# Lataa Pääarviointikehote (Mahdollisuus ladata uusi versio UI:sta)
+# --- KEHOTTEEN LATAUS ---
 st.subheader("Pääarviointikehote")
 custom_prompt_file = st.file_uploader("Lataa uusi Pääarviointikehote (DOCX)", type=['docx'])
 
-system_instructions = ""
+prompt_data = (None, None) # (common_rules, phases_dict)
+
 if custom_prompt_file:
-    try:
-        system_instructions = processor._read_docx(custom_prompt_file)
-        st.success("✅ Käytetään ladattua Pääarviointikehotetta.")
-    except Exception as e:
-        st.error(f"Virhe ladattaessa tiedostoa: {str(e)}")
+    prompt_data = data_handler.parse_prompt_modules(custom_prompt_file)
+    if prompt_data[0]:
+        st.success("✅ Käytetään ladattua Pääarviointikehotetta (Parsittu).")
+    else:
+        st.error("Virhe parsiessa ladattua tiedostoa.")
 else:
-    # Fallback: Oletustiedosto
-    try:
-        prompt_path = os.path.join(os.getcwd(), "Pääarviointikehote.docx")
-        if os.path.exists(prompt_path):
-            system_instructions = processor._read_docx(prompt_path)
-            st.info(f"ℹ️ Käytetään oletuskehotetta (löytyi kansiosta).")
-        else:
-            st.warning(f"⚠️ Pääarviointikehote.docx ei löytynyt kansiosta, eikä uutta ladattu.")
-    except Exception as e:
-        st.error(f"Virhe ladattaessa oletuskehotetta: {str(e)}")
+    # Fallback
+    prompt_path = os.path.join(os.getcwd(), "Pääarviointikehote.docx")
+    if os.path.exists(prompt_path):
+        prompt_data = data_handler.parse_prompt_modules(prompt_path)
+        st.info(f"ℹ️ Käytetään oletuskehotetta (löytyi kansiosta).")
+    else:
+        st.warning(f"⚠️ Pääarviointikehote.docx ei löytynyt kansiosta.")
 
-# Määritellään orkestrointivaiheet
-ORCHESTRATION_STEPS = [
-    {
-        "id": "moodi_a",
-        "name": "Vaihe 1: Alustus (Vartija, Analyytikko, Loogikko)",
-        "model_type": "model_a", 
-        "task_prompt": """
-        Noudata Ajo_Tiedosto.docx ohjeita (MOODI A).
-        Suorita VAIHEET 1, 2 ja 3 peräkkäin.
-        Tulosta vastauksena YKSI AINOA koodilohko, joka sisältää kaikki kolme JSON-tiedostoa 
-        (1_tainted_data.json, 2_todistuskartta.json, 3_argumentaatioanalyysi.json) 
-        eroteltuna === TIEDOSTO: ... === -tunnisteilla.
-        """
-    },
-    {
-        "id": "moodi_b",
-        "name": "Vaihe 2: Auditointi (Kriitikkoryhmä)",
-        "model_type": "model_b", 
-        "task_prompt": """
-        Noudata Ajo_Tiedosto.docx ohjeita (MOODI B).
-        Toimit nyt Kriitikkoryhmänä. Lue syötedata (JSONit 1-3).
-        Suorita rinnakkain VAIHEET 4, 5, 6 ja 7.
-        Tulosta vastauksena YKSI AINOA koodilohko, joka sisältää uudet JSON-tiedostot 
-        (4_logiikka_auditointi.json, 5_kausaalinen_auditointi.json, 
-        6_performatiivisuus_auditointi.json, 7_falsifiointi_ja_etiikka.json).
-        """
-    },
-    {
-        "id": "moodi_c",
-        "name": "Vaihe 3: Synteesi (Tuomari & XAI)",
-        "model_type": "model_a", 
-        "task_prompt": """
-        Noudata Ajo_Tiedosto.docx ohjeita (MOODI C).
-        Lue kaikki aiempi prosessidata (JSONit 1-7).
-        Suorita VAIHE 8 (Tuomari) ja VAIHE 9 (XAI-Raportoija).
-        Tulosta ensin 8_tuomio_ja_pisteet.json omana koodilohkonaan ja 
-        sen jälkeen Lopullinen Arviointiraportti tekstimuodossa OSA 7 mukaisesti.
-        """
-    }
-]
+common_rules, prompt_phases = prompt_data
 
-tab1, tab2 = st.tabs(["Orkestrointi", "Yksittäiset Agentit"])
+# --- ORKESTROINTI ---
+tab1, tab2 = st.tabs(["Orkestrointi (9 Vaihetta)", "Yksittäiset Agentit"])
 
 with tab1:
-    st.info("Orkestrointi suorittaa monivaiheisen prosessin käyttäen Pääarviointikehotetta.")
-    if st.button("Käynnistä Orkestrointi", type="primary", disabled=not uploaded_files or not system_instructions):
-        st.header("Orkestroinnin Tulokset")
-        
-        # Placeholderit tuloksille
-        results_placeholders = {step['id']: st.empty() for step in ORCHESTRATION_STEPS}
-        
-        results = {}
-        current_context = f"{system_instructions}\n\n"
-        # Lisätään tiedostot kontekstiin
-        for uploaded_file in uploaded_files:
-             current_context += f"\n--- TIEDOSTO: {uploaded_file.name} ---\n{processor._read_file_content(uploaded_file)}\n"
+    st.info("Suorittaa arviointiprosessin.")
+    
+    execution_mode = st.radio("Suoritustapa", ["Koko Prosessi (Vaiheet 1-9)", "Vaiheittainen (Moodit A, B, C)"])
+    
+    # Alusta konteksti (jos ei jo olemassa session statessa, jotta data säilyy moodien välillä)
+    if "assessment_context" not in st.session_state:
+        st.session_state.assessment_context = None
 
-        model_a_name = model_selection # Käytetään valittua mallia A:na
-        model_b_name = model_selection # Käytetään valittua mallia B:na
-        
-        for step in ORCHESTRATION_STEPS:
-            step_id = step["id"]
-            with results_placeholders[step_id].container():
-                
-                # Valitse malli
-                if step["model_type"] == "model_a":
-                    selected_model = model_a_name
-                else:
-                    # Tarkista onko model_b saatavilla, muuten käytä model_a
-                    if model_b_name in processor.get_available_models():
-                        selected_model = model_b_name
-                    else:
-                        selected_model = model_a_name
-                
-                # Rakenna prompt
-                context_with_history = current_context
-                if results:
-                    context_with_history += "\n\n--- AIEMMAT TULOKSET ---\n"
-                    for key, val in results.items():
-                        context_with_history += f"\n=== VAIHE: {key} ===\n{val}\n"
-                
-                final_prompt = f"{context_with_history}\n\n--- TEHTÄVÄ ---\n{step['task_prompt']}"
-                
-                with st.spinner(f"Suoritetaan {step['name']}..."):
-                    try:
-                        # Kutsu suoraan mallia tässä jotta saadaan UI päivitys
-                        model = genai.GenerativeModel(selected_model)
-                        response = model.generate_content(final_prompt)
-                        result_text = response.text
-                        results[step_id] = result_text
+    if st.button("Alusta / Nollaa Konteksti", type="secondary"):
+        st.session_state.assessment_context = AssessmentContext(common_rules, prompt_phases)
+        # Lisää tiedostot
+        for uploaded_file in uploaded_files:
+            content = data_handler.read_file_content(uploaded_file)
+            st.session_state.assessment_context.add_file(uploaded_file.name, content)
+        st.success("Konteksti alustettu!")
+
+    context = st.session_state.assessment_context
+    
+    if execution_mode == "Koko Prosessi (Vaiheet 1-9)":
+        if st.button("Käynnistä Koko Orkestrointi", type="primary", disabled=not context):
+            st.header("Tulokset")
+            phases = orchestrator.get_phases()
+            results_placeholders = {step['id']: st.empty() for step in phases}
+            
+            # Debug: Näytä mitä vaiheita tunnistettiin
+            with st.expander("ℹ️ Debug: Tunnistetut vaiheet"):
+                st.write(f"Yleiset säännöt: {len(common_rules)} merkkiä")
+                st.write(list(prompt_phases.keys()))
+
+            for step in phases:
+                step_id = step["id"]
+                with results_placeholders[step_id].container():
+                    with st.spinner(f"Suoritetaan {step['name']}..."):
                         
-                        # UI Logiikka
-                        if step_id == "moodi_c":
-                            st.subheader(step["name"])
-                            # Yritetään erottaa raportti JSONista
-                            if "Lopullinen Arviointiraportti" in result_text:
-                                parts = result_text.split("Lopullinen Arviointiraportti")
-                                json_part = parts[0]
-                                report_part = "Lopullinen Arviointiraportti" + parts[1]
-                                
-                                with st.expander("Tekniset tiedot (JSON)"):
-                                    st.code(json_part)
-                                
-                                st.markdown("### 📝 LOPULLINEN ARVIOINTIRAPORTTI")
-                                st.markdown(report_part)
-                            else:
-                                st.markdown(result_text)
-                        else:
-                            # Välivaiheet piiloon
-                            with st.expander(f"✅ {step['name']} (Klikkaa nähdäksesi yksityiskohdat)"):
-                                st.markdown(result_text)
-                                
-                    except Exception as e:
-                        st.error(f"Virhe vaiheessa {step['name']}: {str(e)}")
-                        results[step_id] = f"VIRHE: {str(e)}"
-                    
-        st.success("Orkestrointi valmis!")
+                        # Debug: Näytä kehote ennen lähetystä
+                        phase_key = step.get("phase_key")
+                        debug_prompt = context.build_prompt(phase_key)
+                        with st.expander(f"🔍 Debug: Kehote ({step['name']})"):
+                            st.text(debug_prompt)
+                            
+                        result_text = orchestrator.run_phase(
+                            step_id, 
+                            context, 
+                            model_selection
+                        )
+                        
+                        with st.expander(f"✅ {step['name']} (Valmis)"):
+                            st.markdown(result_text)
+            st.success("Koko prosessi valmis!")
+
+    else: # Vaiheittainen (Moodit A, B, C)
+        st.markdown("---")
+        
+        # MOODI A
+        st.subheader("Moodi A: Alustus (Vaiheet 1-3)")
+        if st.button("Suorita Moodi A", type="primary", disabled=not context):
+            with st.spinner("Suoritetaan Moodi A..."):
+                results = orchestrator.run_mode("MOODI_A", context, model_selection)
+                for pid, res in results.items():
+                    st.markdown(f"**{pid}**: Valmis")
+                    with st.expander(f"Tulos: {pid}"):
+                        st.markdown(res)
+            st.success("Moodi A valmis!")
+
+        st.markdown("---")
+
+        # MOODI B
+        st.subheader("Moodi B: Auditointi (Vaiheet 4-7)")
+        if st.button("Suorita Moodi B", type="primary", disabled=not context):
+             with st.spinner("Suoritetaan Moodi B..."):
+                results = orchestrator.run_mode("MOODI_B", context, model_selection)
+                for pid, res in results.items():
+                    st.markdown(f"**{pid}**: Valmis")
+                    with st.expander(f"Tulos: {pid}"):
+                        st.markdown(res)
+             st.success("Moodi B valmis!")
+
+        st.markdown("---")
+
+        # MOODI C
+        st.subheader("Moodi C: Synteesi (Vaiheet 8-9)")
+        if st.button("Suorita Moodi C", type="primary", disabled=not context):
+             with st.spinner("Suoritetaan Moodi C..."):
+                results = orchestrator.run_mode("MOODI_C", context, model_selection)
+                for pid, res in results.items():
+                    st.markdown(f"**{pid}**: Valmis")
+                    with st.expander(f"Tulos: {pid}"):
+                        st.markdown(res)
+             st.success("Moodi C valmis!")
 
 with tab2:
     if st.button("Käynnistä Agentti-ajot", type="primary", disabled=not uploaded_files):
@@ -240,8 +212,7 @@ with tab2:
                 with result_containers[agent['name']].container():
                     st.subheader(f"Agentti: {agent['name']}")
                     with st.spinner(f"Suoritetaan analyysiä..."):
-                        result = processor.process_agent(agent, uploaded_files, model_name=model_selection)
+                        result = orchestrator.run_agent(agent, uploaded_files, model_selection)
                         st.markdown(result)
                         st.divider()
             st.success("Kaikki ajot suoritettu!")
-
