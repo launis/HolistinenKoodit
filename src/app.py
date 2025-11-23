@@ -57,12 +57,34 @@ with st.sidebar:
 st.header("1. Lataa tiedostot")
 col1, col2, col3 = st.columns(3)
 
+class TextUpload:
+    """Apuluokka tekstin käsittelyyn kuin se olisi ladattu tiedosto."""
+    def __init__(self, text, name="Liitetty_historia.txt"):
+        self.text = text
+        self.name = name
+        self.type = "text/plain"
+    
+    def getvalue(self):
+        return self.text.encode("utf-8")
+
 with col1:
-    historia_file = st.file_uploader("Keskusteluhistoria (PDF)", type=['pdf', 'txt'])
+    st.markdown("### Keskusteluhistoria")
+    historia_mode = st.radio("Syöttötapa", ["Lataa tiedosto", "Liitä teksti"], label_visibility="collapsed")
+    
+    historia_file = None
+    if historia_mode == "Lataa tiedosto":
+        historia_file = st.file_uploader("Lataa PDF/TXT", type=['pdf', 'txt'], label_visibility="collapsed")
+    else:
+        historia_text = st.text_area("Liitä keskustelu tähän (Ctrl+V)", height=150)
+        if historia_text:
+            historia_file = TextUpload(historia_text)
+
 with col2:
-    lopputuote_file = st.file_uploader("Lopputuote (PDF)", type=['pdf', 'txt'])
+    st.markdown("### Lopputuote")
+    lopputuote_file = st.file_uploader("Lataa PDF/TXT", type=['pdf', 'txt'], key="lopputuote")
 with col3:
-    reflektio_file = st.file_uploader("Reflektiodokumentti (PDF)", type=['pdf', 'txt'])
+    st.markdown("### Reflektio")
+    reflektio_file = st.file_uploader("Lataa PDF/TXT", type=['pdf', 'txt'], key="reflektio")
 
 uploaded_files = [f for f in [historia_file, lopputuote_file, reflektio_file] if f is not None]
 
