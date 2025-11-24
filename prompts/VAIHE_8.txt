@@ -1,0 +1,34 @@
+VAIHE 8: Tuomari-Agentti (Pisteytys)
+Tiedosto: 8_tuomio_ja_pisteet.json
+TypeScript
+
+interface TuomioJaPisteet extends BaseJSON {
+  konfliktin_ratkaisut: Array<{
+    konflikti: string;            // Mitkä agentit olivat eri mieltä?
+    ratkaisu_malli: "POPPER" | "DREYFUS";
+    perustelu: string;
+  }>;
+  mestaruus_poikkeama: {
+    tunnistettu: boolean;
+    perustelu: string;            // Pakollinen jos tunnistettu
+  };
+  aitous_epaily: {
+    automaattinen_lippu: boolean; // "Epäilyttävä Täydellisyys"
+    viesti_hitl:lle: string;
+  };
+  pisteet: {
+    analyysi_ja_prosessi: {
+      arvosana: 1 | 2 | 3 | 4;
+      perustelu: string;
+    };
+    arviointi_ja_argumentaatio: {
+      arvosana: 1 | 2 | 3 | 4;
+      perustelu: string;
+    };
+    synteesi_ja_luovuus: {
+      arvosana: 1 | 2 | 3 | 4;
+      perustelu: string;
+    };
+  };
+  kriittiset_havainnot_yhteenveto: string[];
+}

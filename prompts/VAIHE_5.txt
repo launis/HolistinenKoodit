@@ -1,0 +1,18 @@
+VAIHE 5: Kausaalinen Analyytikko (Temporaalinen Auditointi)
+Tiedosto: 5_kausaalinen_auditointi.json
+
+TypeScript
+
+
+interface KausaalinenAuditointi extends BaseJSON {
+  kausaalinen_auditointi: {
+    aikajana_validi: boolean;     // Edeltääkö syy seurausta?
+    havainnot: string;
+  };
+  kontrafaktuaalinen_testi: {
+    skenaario_A_toteutunut: string;
+    skenaario_B_simulaatio: string; // "Mitä jos oivallusta ei olisi tapahtunut?"
+    uskottavuus_arvio: string;
+  };
+  abduktiivinen_paatelma: "Aito Oivallus" | "Post-Hoc Rationalisointi" | "Epävarma";
+}

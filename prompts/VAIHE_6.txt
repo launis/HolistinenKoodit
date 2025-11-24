@@ -1,0 +1,18 @@
+VAIHE 6: Performatiivisuuden Tunnistaja
+Tiedosto: 6_performatiivisuus_auditointi.json
+
+TypeScript
+
+
+interface PerformatiivisuusAuditointi extends BaseJSON {
+  performatiivisuus_heuristiikat: Array<{
+    heuristiikka: string;         // esim. "Epäuskottava lineaarisuus"
+    lippu_nostettu: boolean;      // Tunnistettiinko ongelma?
+    kuvaus: string;
+  }>;
+  pre_mortem_analyysi: {
+    suoritettu: boolean;
+    hiljaiset_signaalit: string[]; // Lista signaaleista, jos löytyi
+  };
+  yleisarvio_aitoudesta: "Orgaaninen" | "Performatiivinen" | "Epäilyttävä";
+}

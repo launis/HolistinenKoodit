@@ -1,0 +1,19 @@
+VAIHE 2: Analyytikko-Agentti (Todistuskartta)
+Tiedosto: 2_todistuskartta.json
+
+TypeScript
+
+
+interface TodistusKartta extends BaseJSON {
+  hypoteesit: Array<{
+    id: string;                   // esim. "Väite-1"
+    vaite_teksti: string;         // Käyttäjän väite reflektiosta
+    loytyyko_todisteita: boolean;
+  }>;
+  rag_todisteet: Array<{
+    viittaa_hypoteesiin_id: string;
+    perusteet: string;            // Ote keskusteluhistoriasta tai "todiste_puuttuu"
+    konteksti_segmentti: string;  // Tarkka sitaatti
+    relevanssi_score: number;     // 1-10 arvio
+  }>;
+}

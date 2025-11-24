@@ -1,0 +1,18 @@
+VAIHE 7: Faktuaalinen ja Eettinen Valvoja
+Tiedosto: 7_falsifiointi_ja_etiikka.json
+
+TypeScript
+
+
+interface EtiikkaJaFakta extends BaseJSON {
+  faktantarkistus_rfi: Array<{
+    vaite: string;
+    verifiointi_tulos: "Vahvistettu" | "Kumottu" | "Ei voitu vahvistaa";
+    lahde_tai_paattely: string;
+  }>;
+  eettiset_havainnot: Array<{
+    tyyppi: "Syrjintä" | "Haitallinen sisältö" | "Plagiointi" | "Ei havaittu";
+    vakavuus: "Kriittinen" | "Varoitus" | "N/A";
+    kuvaus: string;
+  }>;
+}

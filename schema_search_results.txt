@@ -1,0 +1,162 @@
+
+=== Löytyi: 'pisteet:' positiossa 16329 ===
+
+u: boolean;
+    perustelu: string;            // Pakollinen jos tunnistettu
+  };
+  aitous_epaily: {
+    automaattinen_lippu: boolean; // "Epäilyttävä Täydellisyys"
+    viesti_hitl:lle: string;
+  };
+  pisteet: {
+    analyysi_ja_prosessi: {
+      arvosana: 1 | 2 | 3 | 4;
+      perustelu: string;
+    };
+    arviointi_ja_argumentaatio: {
+      arvosana: 1 | 2 | 3 | 4;
+      perustelu: string;
+    };
+    synteesi_ja_luovuus: {
+      arvosana: 1 | 2 | 3 | 4;
+      perustelu: string;
+    };
+  };
+  kriittiset_havainnot_yhteenveto: string[];
+}
+
+VAIHE 9: XAI-Raportoija
+Huomio: Vaihe 9 ei tuota JSON-tiedostoa myöhemmille agenteille, vaan generoi lopullisen luettavan raportin (OSA 7 muotoilu) hyödyntäen yllä olevia tietorakenteita.
+
+OSA 4: KOGNITIIVINEN ARVIOINTIMATRIISI (BARS)
+Seuraava taulukko määrittelee Behaviorally Anchored Rating Scale (BARS) -asteikon, jota käytetään suorituksen arviointiin.
+HUOMIO: Taso 4 sisältää useita vaihtoehtoisia polkuja (merkitty 'TAI'). Jos päädyt Tasoon 4, sinun on perusteluissasi eksplisiittisesti mainittava, kumpaa polkua ('Strateginen ennakointi' vai 'Strateginen ketteryys') suoritus edusti.
+Taulukko 1: Kognitiivinen Arviointimatriisi (4-portainen BARS-aste
+
+============================================================
+
+
+=== Löytyi: 'TuomioJaPisteet' positiossa 15882 ===
+
+lagiointi" | "Ei havaittu";
+    vakavuus: "Kriittinen" | "Varoitus" | "N/A";
+    kuvaus: string;
+  }>;
+}
+
+VAIHE 8: Tuomari-Agentti (Pisteytys)
+Tiedosto: 8_tuomio_ja_pisteet.json
+TypeScript
+
+interface TuomioJaPisteet extends BaseJSON {
+  konfliktin_ratkaisut: Array<{
+    konflikti: string;            // Mitkä agentit olivat eri mieltä?
+    ratkaisu_malli: "POPPER" | "DREYFUS";
+    perustelu: string;
+  }>;
+  mestaruus_poikkeama: {
+    tunnistettu: boolean;
+    perustelu: string;            // Pakollinen jos tunnistettu
+  };
+  aitous_epaily: {
+    automaattinen_lippu: boolean; // "Epäilyttävä Täydellisyys"
+    viesti_hitl:lle: string;
+  };
+  pisteet: {
+    analyysi_ja_prosessi: {
+      arvosana: 1 | 2 | 3 | 4;
+      perustelu: string;
+    };
+    arviointi_ja_argumentaatio: {
+      arvosana: 1 | 2 | 3 | 4;
+      perustelu: string;
+    };
+    synteesi_ja_luovuus: {
+      arvosana: 1 | 2 | 3 | 4;
+      perustelu: string;
+    };
+  };
+  kriittiset_havainnot_yhteenveto: string[];
+}
+
+VAIHE 9: XAI-Raportoija
+Huomio: Vaihe 9 ei tuota JSON-tiedostoa myöhemmille agenteille, vaan generoi lopullisen luettavan raportin (OSA 7 muotoilu) hyödyntäen yllä olevia tietorakenteita.
+
+OSA 4: KOGNITIIVINEN A
+
+============================================================
+
+
+=== Löytyi: 'analyysi_ja_prosessi' positiossa 16344 ===
+
+ perustelu: string;            // Pakollinen jos tunnistettu
+  };
+  aitous_epaily: {
+    automaattinen_lippu: boolean; // "Epäilyttävä Täydellisyys"
+    viesti_hitl:lle: string;
+  };
+  pisteet: {
+    analyysi_ja_prosessi: {
+      arvosana: 1 | 2 | 3 | 4;
+      perustelu: string;
+    };
+    arviointi_ja_argumentaatio: {
+      arvosana: 1 | 2 | 3 | 4;
+      perustelu: string;
+    };
+    synteesi_ja_luovuus: {
+      arvosana: 1 | 2 | 3 | 4;
+      perustelu: string;
+    };
+  };
+  kriittiset_havainnot_yhteenveto: string[];
+}
+
+VAIHE 9: XAI-Raportoija
+Huomio: Vaihe 9 ei tuota JSON-tiedostoa myöhemmille agenteille, vaan generoi lopullisen luettavan raportin (OSA 7 muotoilu) hyödyntäen yllä olevia tietorakenteita.
+
+OSA 4: KOGNITIIVINEN ARVIOINTIMATRIISI (BARS)
+Seuraava taulukko määrittelee Behaviorally Anchored Rating Scale (BARS) -asteikon, jota käytetään suorituksen arviointiin.
+HUOMIO: Taso 4 sisältää useita vaihtoehtoisia polkuja (merkitty 'TAI'). Jos päädyt Tasoon 4, sinun on perusteluissasi eksplisiittisesti mainittava, kumpaa polkua ('Strateginen ennakointi' vai 'Strateginen ketteryys') suoritus edusti.
+Taulukko 1: Kognitiivinen Arviointimatriisi (4-portainen BARS-asteikko)
+
+OSA 5: O
+
+============================================================
+
+
+=== Löytyi: 'arviointi_ja_argumentaatio' positiossa 16435 ===
+
+tomaattinen_lippu: boolean; // "Epäilyttävä Täydellisyys"
+    viesti_hitl:lle: string;
+  };
+  pisteet: {
+    analyysi_ja_prosessi: {
+      arvosana: 1 | 2 | 3 | 4;
+      perustelu: string;
+    };
+    arviointi_ja_argumentaatio: {
+      arvosana: 1 | 2 | 3 | 4;
+      perustelu: string;
+    };
+    synteesi_ja_luovuus: {
+      arvosana: 1 | 2 | 3 | 4;
+      perustelu: string;
+    };
+  };
+  kriittiset_havainnot_yhteenveto: string[];
+}
+
+VAIHE 9: XAI-Raportoija
+Huomio: Vaihe 9 ei tuota JSON-tiedostoa myöhemmille agenteille, vaan generoi lopullisen luettavan raportin (OSA 7 muotoilu) hyödyntäen yllä olevia tietorakenteita.
+
+OSA 4: KOGNITIIVINEN ARVIOINTIMATRIISI (BARS)
+Seuraava taulukko määrittelee Behaviorally Anchored Rating Scale (BARS) -asteikon, jota käytetään suorituksen arviointiin.
+HUOMIO: Taso 4 sisältää useita vaihtoehtoisia polkuja (merkitty 'TAI'). Jos päädyt Tasoon 4, sinun on perusteluissasi eksplisiittisesti mainittava, kumpaa polkua ('Strateginen ennakointi' vai 'Strateginen ketteryys') suoritus edusti.
+Taulukko 1: Kognitiivinen Arviointimatriisi (4-portainen BARS-asteikko)
+
+OSA 5: OPERATIONAALISET EROTTELUSÄÄNNÖT
+EROTTELU 1: Faktuaalisen Tarkkuuden Mandaatti
+VAATIMUS (Age
+
+============================================================

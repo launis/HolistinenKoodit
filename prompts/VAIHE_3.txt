@@ -1,0 +1,23 @@
+VAIHE 3: Loogikko-Agentti (Argumentaatioanalyysi)
+Tiedosto: 3_argumentaatioanalyysi.json
+
+TypeScript
+
+
+interface ArgumentaatioAnalyysi extends BaseJSON {
+  toulmin_analyysi: Array<{
+    vaite_id: string;
+    claim: string;
+    data: string;
+    warrant: string;              // Oikeutus
+    backing: string;              // Tuki (jos on)
+  }>;
+  kognitiivinen_taso: {
+    bloom_taso: string;           // esim. "Analyze" tai "Evaluate"
+    strateginen_syvyys: string;   // Arvio onko kyseessä syvällinen vai pinnallinen taso
+  };
+  walton_skeema: {
+    tunnistettu_skeema: string;   // esim. "Argument from Expert Opinion"
+    kriittiset_kysymykset: string[]; // Lista kysymyksistä vaiheelle 4
+  };
+}

@@ -5,6 +5,7 @@ from llm_service import LLMService
 from data_handler import DataHandler, TextUpload
 from orchestrator import Orchestrator
 from context import AssessmentContext
+from prompt_splitter import PromptSplitter
 
 # Sivun asetukset
 st.set_page_config(page_title="Holistinen Mestaruus 3.0", layout="wide")
@@ -89,23 +90,53 @@ st.subheader("Pääarviointikehote")
 custom_prompt_file = st.file_uploader("Lataa uusi Pääarviointikehote (DOCX)", type=['docx'])
 
 prompt_data = (None, None) # (common_rules, phases_dict)
+prompt_source_path = None
 
 if custom_prompt_file:
-    prompt_data = data_handler.parse_prompt_modules(custom_prompt_file)
-    if prompt_data[0]:
-        st.success("✅ Käytetään ladattua Pääarviointikehotetta (Parsittu).")
-    else:
-        st.error("Virhe parsiessa ladattua tiedostoa.")
+    # Tallenna ladattu tiedosto väliaikaisesti
+    temp_path = os.path.join(os.getcwd(), "temp_prompt.docx")
+    with open(temp_path, "wb") as f:
+        f.write(custom_prompt_file.getbuffer())
+    prompt_source_path = temp_path
+    
+    # Jaa dokumentti osiin
+    splitter = PromptSplitter(temp_path)
+    splitter.split_document()
+    
+    # Lataa jaetut moduulit
+    prompt_modules = splitter.get_prompt_modules()
+    common_rules = prompt_modules.get('COMMON_RULES', '')
+    prompt_phases = {k: v for k, v in prompt_modules.items() if k.startswith('VAIHE')}
+    prompt_data = (common_rules, prompt_phases)
+    
+    st.success("✅ Käytetään ladattua Pääarviointikehotetta (Jaettu osiin).")
 else:
-    # Fallback
+    # Fallback: Käytä oletustiedostoa
     prompt_path = os.path.join(os.getcwd(), "Pääarviointikehote.docx")
     if os.path.exists(prompt_path):
-        prompt_data = data_handler.parse_prompt_modules(prompt_path)
-        st.info(f"ℹ️ Käytetään oletuskehotetta (löytyi kansiosta).")
+        prompt_source_path = prompt_path
+        
+        # Jaa dokumentti osiin
+        splitter = PromptSplitter(prompt_path)
+        splitter.split_document()
+        
+        # Lataa jaetut moduulit
+        prompt_modules = splitter.get_prompt_modules()
+        common_rules = prompt_modules.get('COMMON_RULES', '')
+        prompt_phases = {k: v for k, v in prompt_modules.items() if k.startswith('VAIHE')}
+        prompt_data = (common_rules, prompt_phases)
+        
+        st.info(f"ℹ️ Käytetään oletuskehotetta (Jaettu osiin).")
     else:
         st.warning(f"⚠️ Pääarviointikehote.docx ei löytynyt kansiosta.")
+        common_rules, prompt_phases = None, None
 
-common_rules, prompt_phases = prompt_data
+if common_rules and prompt_phases:
+    with st.expander("📊 Kehotteen tilastot"):
+        st.write(f"Yleiset säännöt: {len(common_rules):,} merkkiä (~{len(common_rules)//4:,} tokenia)")
+        st.write(f"Vaiheita: {len(prompt_phases)}")
+        total_phase_chars = sum(len(v) for v in prompt_phases.values())
+        st.write(f"Vaihe-ohjeet yhteensä: {total_phase_chars:,} merkkiä (~{total_phase_chars//4:,} tokenia)")
 
 # --- ORKESTROINTI ---
 tab1, tab2 = st.tabs(["Orkestrointi (9 Vaihetta)", "Yksittäiset Agentit"])
@@ -145,11 +176,12 @@ with tab1:
                 with results_placeholders[step_id].container():
                     with st.spinner(f"Suoritetaan {step['name']}..."):
                         
-                        # Debug: Näytä kehote ennen lähetystä
-                        phase_key = step.get("phase_key")
-                        debug_prompt = context.build_prompt(phase_key)
-                        with st.expander(f"🔍 Debug: Kehote ({step['name']})"):
-                            st.text(debug_prompt)
+                        # Debug: Näytä kehote ennen lähetystä (paitsi Vaihe 9, joka on Python-koodia)
+                        if step_id != "phase_9":
+                            phase_key = step.get("phase_key")
+                            debug_prompt = context.build_prompt(phase_key)
+                            with st.expander(f"🔍 Debug: Kehote ({step['name']})"):
+                                st.text(debug_prompt)
                             
                         result_text = orchestrator.run_phase(
                             step_id, 
@@ -163,6 +195,9 @@ with tab1:
 
     else: # Vaiheittainen (Moodit A, B, C)
         st.markdown("---")
+        
+        if not context:
+            st.warning("⚠️ Sinun täytyy alustaa konteksti ensin painamalla yllä olevaa 'Alusta / Nollaa Konteksti' -painiketta, jotta voit suorittaa moodeja.")
         
         # MOODI A
         st.subheader("Moodi A: Alustus (Vaiheet 1-3)")

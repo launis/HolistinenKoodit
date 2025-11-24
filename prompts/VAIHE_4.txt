@@ -1,0 +1,18 @@
+VAIHE 4: Looginen Falsifioija (Auditointi)
+Tiedosto: 4_logiikka_auditointi.json
+
+TypeScript
+
+
+interface LogiikkaAuditointi extends BaseJSON {
+  walton_stressitesti_loydokset: Array<{
+    kysymys: string;              // Kriittinen kysymys (vaiheesta 3)
+    kestiko_todistusaineisto: boolean;
+    havainto: string;             // Falsifioijan kommentti
+  }>;
+  paattelyketjun_uskollisuus_auditointi: {
+    onko_post_hoc_rationalisointia: boolean;
+    perustelu: string;
+    uskollisuus_score: "KORKEA" | "EPÄVARMA" | "HEIKKO";
+  };
+}
