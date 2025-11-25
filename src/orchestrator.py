@@ -40,15 +40,90 @@ class Orchestrator:
         if phase_key not in context.prompt_modules:
              return f"VAROITUS: Vaihetta '{phase_key}' ei löytynyt kehotteesta."
 
+        # Määritä validointifunktio, jos vaiheella on schema
+        validation_fn = None
+        required_keys = []
+        if "schema" in phase:
+             # Extract top-level keys from the schema for validation
+             required_keys = list(phase["schema"].get("properties", {}).keys())
+
+        if required_keys:
+            def validate_schema(data):
+                missing_keys = [key for key in required_keys if key not in data]
+                if missing_keys:
+                    print(f"SCHEMA VALIDATION FAILED for {phase_id}: Missing keys {missing_keys}")
+                    return False
+                return True
+            validation_fn = validate_schema
+
         # Suorita LLM-kutsu
-        result = self.llm_service.generate_response(final_prompt, model_name)
+        result = self.llm_service.generate_response(final_prompt, model_name, validation_fn=validation_fn)
         
+        # Puhdista JSON-vastaus (poista "Here is the JSON" -tyyppiset höpinät)
+        cleaned_result = self._clean_json_response(result)
+        
+        # KÄSITTELE PLACEHOLDERIT (VAIHE 1 OPTIMOINTI)
+        # Jos vastaus sisältää {{FILE: ...}}, korvaa se tiedoston sisällöllä
+        if "{{FILE:" in cleaned_result:
+            cleaned_result = self._inject_file_content(cleaned_result, context)
+
         # Tallenna tulos kontekstiin ja lokaaliin välimuistiin (jos tarpeen)
         # Käytetään phase_keytä (esim. "VAIHE 1") avaimena, jotta malli ymmärtää kontekstin paremmin
-        context.add_result(phase_key, result)
-        self.results[phase_id] = result
+        context.add_result(phase_key, cleaned_result)
+        self.results[phase_id] = cleaned_result
         
-        return result
+        return cleaned_result
+
+    def _clean_json_response(self, text):
+        """
+        Etsii tekstistä ensimmäisen '{' ja viimeisen '}' merkin ja palauttaa niiden välisen sisällön.
+        Tämä poistaa mallin mahdolliset "Here is the JSON..." -alku/lopputekstit.
+        """
+        if not text:
+            return ""
+            
+        start = text.find('{')
+        end = text.rfind('}')
+        
+        if start != -1 and end != -1 and end > start:
+            return text[start:end+1]
+            
+        return text
+
+    def _inject_file_content(self, text, context):
+        """
+        Korvaa {{FILE: tiedostonimi}} -placeholderit tiedoston sisällöllä.
+        """
+        import re
+        
+        # Etsi kaikki placeholderit
+        # Oletetaan muoto: "{{FILE: tiedostonimi}}" tai '{{FILE: tiedostonimi}}'
+        pattern = re.compile(r'\{\{FILE:\s*(.*?)\}\}')
+        
+        def replace_match(match):
+            filename = match.group(1).strip()
+            # Etsi tiedosto kontekstista
+            # context.files on lista (filename, content)
+            for fname, content in context.files:
+                # Yksinkertainen vertailu (voi vaatia tarkempaa logiikkaa jos polkuja)
+                if fname == filename or fname.endswith(filename) or filename in fname:
+                    # JSON-escapeeraus on tärkeää!
+                    # Mutta jos korvaamme suoraan tekstissä, meidän pitää olla varovaisia JSON-rakenteen kanssa.
+                    # Jos placeholder on JSON-stringin sisällä, meidän pitää escapeerata sisältö.
+                    # Tässä oletetaan että placeholder on "value": "{{FILE: ...}}"
+                    # Joten palautamme sisällön JSON-escapeerattuna (mutta ilman lainausmerkkejä, koska ne ovat jo siellä?)
+                    # EI, regex korvaa vain {{FILE: ...}} osan.
+                    # Joten meidän pitää palauttaa sisältö escapeerattuna.
+                    import json
+                    # json.dumps lisää lainausmerkit alkuun ja loppuun, poistetaan ne
+                    escaped_content = json.dumps(content)
+                    if escaped_content.startswith('"') and escaped_content.endswith('"'):
+                        escaped_content = escaped_content[1:-1]
+                    return escaped_content
+            
+            return f"[TIEDOSTOA {filename} EI LÖYTYNYT]"
+
+        return pattern.sub(replace_match, text)
 
     def run_mode(self, mode_name, context, model_name):
         """
@@ -63,35 +138,13 @@ class Orchestrator:
             
         phase_ids = EXECUTION_MODES[mode_name]
         
-        # ERIKOISKÄSITTELY: Moodi C (Vaihe 8 + 9)
-        # Vaihe 9 on Python-generaattori, joten sitä ei voi yhdistää LLM-promptiin.
-        if mode_name == "MOODI_C":
-            results = {}
-            for phase_id in phase_ids:
-                result = self.run_phase(phase_id, context, model_name)
-                results[phase_id] = result
-            return results
-
-        # MOODIT A ja B: Yhdistetty ajo
-        # 1. Kerää vaiheiden avaimet (esim. "VAIHE 1", "VAIHE 2")
-        phase_keys = []
-        for pid in phase_ids:
-            p = next((x for x in PHASES if x["id"] == pid), None)
-            if p: phase_keys.append(p["phase_key"])
-            
-        # 2. Rakenna yksi iso prompt
-        combined_prompt = context.build_combined_prompt(phase_keys)
-        
-        # 3. Aja LLM
-        result_text = self.llm_service.generate_response(combined_prompt, model_name)
-        
-        # 4. Tallenna tulos
-        # Tallennetaan koko moodin tulos yhtenä könttinä kontekstiin
-        # Tämä toimii "Container"-logiikalla: seuraava moodi saa koko edellisen moodin tulosteen syötteenä
-        context.add_result(mode_name, result_text)
-        
-        # Palautetaan tulos sanakirjana (yksi avain koko moodille)
-        return {mode_name: result_text}
+        # KAIKKI MOODIT: Ajetaan vaiheet sekventiaalisesti
+        # Tämä on varmempi tapa välttää token-rajat ja varmistaa että jokainen vaihe saa huomiota.
+        results = {}
+        for phase_id in phase_ids:
+            result = self.run_phase(phase_id, context, model_name)
+            results[phase_id] = result
+        return results
 
     def run_agent(self, agent_config, uploaded_files, model_name):
         """

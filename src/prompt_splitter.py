@@ -10,141 +10,181 @@ from docx import Document
 import re
 import os
 
+import json
+import json
+try:
+    from config import PHASES
+except ImportError:
+    from src.config import PHASES
+
 class PromptSplitter:
-    def __init__(self, source_file="Pääarviointikehote.docx", output_dir="prompts"):
+    def __init__(self, source_file="Pääarviointikehote.docx"):
         self.source_file = source_file
-        self.output_dir = output_dir
+        self.modules = {} # Store modules in memory: {'COMMON_RULES': '...', 'VAIHE 1': '...'}
         
     def split_document(self):
-        """Jakaa dokumentin osiin ja tallentaa ne."""
-        print(f"Luetaan dokumenttia: {self.source_file}")
+        """Jakaa dokumentin osiin ja tallentaa ne muistiin."""
+        # print(f"Luetaan dokumenttia: {self.source_file}")
         
-        # Lue dokumentti
-        doc = Document(self.source_file)
-        full_text = '\n'.join([p.text for p in doc.paragraphs])
+        try:
+            # Lue dokumentti
+            doc = Document(self.source_file)
+            # FIX: Use '\n' (newline) instead of '\\n' (literal backslash n)
+            full_text = '\n'.join([p.text for p in doc.paragraphs])
+            
+            # 1. Erota yleiset säännöt (alusta VAIHE 1:een asti)
+            common_rules = self._extract_common_rules(full_text)
+            self.modules['COMMON_RULES'] = common_rules
+            # print(f"✓ Parsittu: Yleiset säännöt ({len(common_rules)} merkkiä)")
+            
+            # 2. Erota jokainen vaihe
+            for i in range(1, 10):  # VAIHE 1-9
+                phase_text = self._extract_phase(full_text, i)
+                if phase_text:
+                    # Jälkikäsittely: Lisää placeholderit ja skeemaesimerkit
+                    phase_text = self._post_process_phase(i, phase_text)
+                    self.modules[f'VAIHE {i}'] = phase_text
+                    # print(f"✓ Parsittu: VAIHE {i} ({len(phase_text)} merkkiä)")
+                # else:
+                    # print(f"⚠ VAIHE {i} ei löytynyt")
+            
+            return True
+        except Exception as e:
+            print(f"Virhe dokumentin jakamisessa: {e}")
+            return False
+
+    def _post_process_phase(self, phase_number, text):
+        """
+        Lisää tekniset ohjeet (placeholderit ja JSON-esimerkit) promptiin.
+        Tämä varmistaa, että ne ovat mukana vaikka DOCX ylikirjoitettaisiin.
+        """
         
-        # Luo output-kansio jos ei ole
-        os.makedirs(self.output_dir, exist_ok=True)
+        # 1. VAIHE 1: Placeholder-injektio (MAX_TOKENS esto)
+        if phase_number == 1:
+            replacements = {
+                "keskusteluhistoria: string;   // Puhdistettu raakateksti": 'keskusteluhistoria: string;   // ÄLÄ TULOSTA SISÄLTÖÄ! Käytä VAIN tätä tekstiä: "{{FILE: Keskusteluhistoria.pdf}}"',
+                "lopputuote: string;           // Puhdistettu raakateksti": 'lopputuote: string;           // ÄLÄ TULOSTA SISÄLTÖÄ! Käytä VAIN tätä tekstiä: "{{FILE: Lopputuote.pdf}}"',
+                "reflektiodokumentti: string;  // Puhdistettu raakateksti": 'reflektiodokumentti: string;  // ÄLÄ TULOSTA SISÄLTÖÄ! Käytä VAIN tätä tekstiä: "{{FILE: Reflektiodokumentti.pdf}}"'
+            }
+            for old, new in replacements.items():
+                text = text.replace(old, new)
+
+        # 2. KAIKKI VAIHEET (paitsi 9): Skeemaesimerkin injektio
+        if phase_number < 9:
+            # Etsi oikea vaihe konfiguraatiosta
+            phase_config = next((p for p in PHASES if p["id"] == f"phase_{phase_number}"), None)
+            
+            if phase_config and "schema" in phase_config:
+                # Generoi esimerkki skeemasta (Config.py on primääri lähde)
+                example_obj = self._generate_example_from_schema(phase_config["schema"])
+                example_json = json.dumps(example_obj, indent=2, ensure_ascii=False)
+                
+                injection = f"""
+KÄSKE: (Esimerkki oikeasta rakenteesta):
+Sinun TÄYTYY noudattaa tätä rakennetta (huomaa tarkat avaimet!):
+{example_json}
+ÄLÄ käytä avaimia kuten "pisteytys", "taso" tai "kriteeri1" ellei niitä ole yllä mainittu. Käytä vain yllä olevia.
+"""
+                # Lisää loppuun ennen "Älä tulosta mitään muuta..." jos mahdollista, tai vain loppuun
+                if "Älä tulosta mitään muuta tämän jälkeen." in text:
+                    text = text.replace("Älä tulosta mitään muuta tämän jälkeen.", injection + "\nÄlä tulosta mitään muuta tämän jälkeen.")
+                else:
+                    text += injection
+
+        return text
+
+    def _generate_example_from_schema(self, schema):
+        """Generoi esimerkkiobjektin rekursiivisesti skeeman perusteella."""
+        if schema.get("type") == "object":
+            obj = {}
+            for prop_name, prop_schema in schema.get("properties", {}).items():
+                obj[prop_name] = self._generate_example_from_schema(prop_schema)
+            return obj
         
-        # 1. Erota yleiset säännöt (alusta VAIHE 1:een asti)
-        common_rules = self._extract_common_rules(full_text)
-        self._save_file("Yleiset_säännöt.txt", common_rules)
-        print(f"✓ Tallennettu: Yleiset_säännöt.txt ({len(common_rules)} merkkiä)")
-        
-        # 2. Erota jokainen vaihe
-        for i in range(1, 10):  # VAIHE 1-9
-            phase_text = self._extract_phase(full_text, i)
-            if phase_text:
-                filename = f"VAIHE_{i}.txt"
-                self._save_file(filename, phase_text)
-                print(f"✓ Tallennettu: {filename} ({len(phase_text)} merkkiä)")
-            else:
-                print(f"⚠ VAIHE {i} ei löytynyt")
-        
-        print(f"\n✅ Dokumentti jaettu onnistuneesti! Tiedostot: {self.output_dir}/")
-        return True
-    
+        elif schema.get("type") == "array":
+            # Luodaan lista, jossa on yksi esimerkki-item
+            item_schema = schema.get("items", {})
+            return [self._generate_example_from_schema(item_schema)]
+            
+        elif "example" in schema:
+            return schema["example"]
+            
+        else:
+            # Fallback oletusarvot jos example puuttuu
+            t = schema.get("type")
+            if t == "string": return "..."
+            if t == "boolean": return False
+            if t == "number": return 0
+            if t == "integer": return 0
+            return None
+
     def _extract_common_rules(self, text):
         """
-        Erottaa yleiset säännöt.
-        Yleiset säännöt = OSA 1-5 (ennen "OSA 6: AGENTTIEN TYÖNKULKU")
+        Erottaa tekstin alusta ensimmäiseen 'VAIHE 1:' -merkintään asti.
+        Käyttää pituusrajoitusta (max 100 merkkiä) ja varmistaa, ettei rivi lopu tavuviivaan (-)
+        joka viittaisi katkenneeseen sanaan/lauseeseen.
         """
-        # Etsi "OSA 6: AGENTTIEN TYÖNKULKU"
-        osa6_match = re.search(r'OSA 6[:\s]+AGENTTIEN TYÖNKULKU', text, re.IGNORECASE)
-        if osa6_match:
-            return text[:osa6_match.start()].strip()
-        
-        # Varasuunnitelma: Etsi ensimmäinen VAIHE
-        vaihe_match = re.search(r'VAIHE 1[:\s]', text, re.IGNORECASE)
-        if vaihe_match:
-            return text[:vaihe_match.start()].strip()
-        
-        # Jos ei löydy, palauta ensimmäinen 30%
-        return text[:len(text)//3]
-    
-    def _extract_phase(self, text, phase_num):
+        pattern = r"(?m)^VAIHE 1:.{0,100}(?<!-)$"
+        match = re.search(pattern, text)
+        if match:
+            return text[:match.start()].strip()
+        return ""
+
+    def _extract_phase(self, text, phase_number):
         """
-        Erottaa tietyn vaiheen tekstin OSA 6:n sisältä.
-        VAIHE-ohjeet ovat muodossa: "VAIHE X: Nimi"
+        Erottaa tietyn vaiheen tekstin.
+        Käyttää pituusrajoitusta ja tavuviivan tarkistusta otsikoiden tunnistamiseen.
         """
-        # Etsi nykyinen vaihe
-        current_patterns = [
-            rf'VAIHE {phase_num}:',  # "VAIHE 1:"
-            rf'VAIHE {phase_num}\s',  # "VAIHE 1 "
-        ]
+        start_marker = f"VAIHE {phase_number}:"
+        end_marker = f"VAIHE {phase_number + 1}:"
         
-        current_match = None
-        for pattern in current_patterns:
-            current_match = re.search(pattern, text, re.IGNORECASE)
-            if current_match:
-                break
+        # Etsi alkukohta (rivin alusta, max 100 merkkiä, ei lopu tavuviivaan)
+        start_pattern = f"(?m)^{start_marker}.{{0,100}}(?<!-)$"
+        start_match = re.search(start_pattern, text)
         
-        if not current_match:
-            return None
+        if not start_match:
+            return ""
+            
+        start_index = start_match.start()
         
-        start = current_match.start()
-        
-        # Etsi loppu
-        # 1. Seuraava VAIHE
-        # 2. OSA 7 (jos VAIHE 9)
-        # 3. Dokumentin loppu
-        
-        end = len(text)
-        
-        if phase_num < 9:
-            # Etsi seuraava VAIHE
-            next_patterns = [
-                rf'VAIHE {phase_num + 1}:',
-                rf'VAIHE {phase_num + 1}\s',
-            ]
-            for pattern in next_patterns:
-                next_match = re.search(pattern, text[start+10:], re.IGNORECASE)
-                if next_match:
-                    end = start + 10 + next_match.start()
-                    break
+        if phase_number == 9:
+            # Viimeinen vaihe, otetaan loppuun asti
+            return text[start_index:].strip()
         else:
-            # VAIHE 9 - etsi OSA 7
-            osa7_match = re.search(r'OSA 7[:\s]', text[start+10:], re.IGNORECASE)
-            if osa7_match:
-                end = start + 10 + osa7_match.start()
-        
-        phase_text = text[start:end].strip()
-        
-        # Poista OSA 4-7 sisältö jos se on mukana
-        # (Tämä voi tapahtua jos VAIHE 9:n jälkeen tulee OSA 4-7)
-        osa_match = re.search(r'OSA [4-7][:\s]', phase_text[100:], re.IGNORECASE)
-        if osa_match:
-            phase_text = phase_text[:100 + osa_match.start()].strip()
-        
-        return phase_text
-    
-    def _save_file(self, filename, content):
-        """Tallentaa tiedoston output-kansioon."""
-        filepath = os.path.join(self.output_dir, filename)
-        with open(filepath, 'w', encoding='utf-8') as f:
-            f.write(content)
+            # Etsi loppukohta (seuraava vaihe rivin alusta, max 100 merkkiä, ei lopu tavuviivaan)
+            end_pattern = f"(?m)^{end_marker}.{{0,100}}(?<!-)$"
+            end_match = re.search(end_pattern, text)
+            
+            if end_match:
+                return text[start_index:end_match.start()].strip()
+            
+            # Fallback: jos seuraavaa vaihetta ei löydy
+            return text[start_index:].strip()
     
     def get_prompt_modules(self):
         """
-        Lukee jaetut tiedostot ja palauttaa ne sanakirjana.
-        Käytetään context.py:ssä.
+        Palauttaa jaetut moduulit sanakirjana.
         """
-        modules = {}
+        return self.modules
+
+    def save_to_disk(self, output_dir="prompts"):
+        """Tallentaa moduulit tekstitiedostoiksi."""
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+            
+        # Tallenna yleiset säännöt
+        if 'COMMON_RULES' in self.modules:
+            with open(os.path.join(output_dir, "Yleiset_säännöt.txt"), "w", encoding="utf-8") as f:
+                f.write(self.modules['COMMON_RULES'])
+                
+        # Tallenna vaiheet
+        for key, content in self.modules.items():
+            if key.startswith("VAIHE"):
+                filename = f"{key.replace(' ', '_')}.txt"
+                with open(os.path.join(output_dir, filename), "w", encoding="utf-8") as f:
+                    f.write(content)
         
-        # Lue yleiset säännöt
-        common_path = os.path.join(self.output_dir, "Yleiset_säännöt.txt")
-        if os.path.exists(common_path):
-            with open(common_path, 'r', encoding='utf-8') as f:
-                modules['COMMON_RULES'] = f.read()
-        
-        # Lue vaiheet
-        for i in range(1, 10):
-            phase_path = os.path.join(self.output_dir, f"VAIHE_{i}.txt")
-            if os.path.exists(phase_path):
-                with open(phase_path, 'r', encoding='utf-8') as f:
-                    modules[f'VAIHE {i}'] = f.read()
-        
-        return modules
+        # print(f"✓ Tallennettu {len(self.modules)} tiedostoa kansioon {output_dir}")
 
 
 def split_prompt_on_startup(source_file="Pääarviointikehote.docx"):
@@ -158,6 +198,7 @@ def split_prompt_on_startup(source_file="Pääarviointikehote.docx"):
     
     splitter = PromptSplitter(source_file)
     splitter.split_document()
+    splitter.save_to_disk()
     return splitter
 
 

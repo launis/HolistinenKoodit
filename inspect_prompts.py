@@ -1,30 +1,33 @@
-import os
-from src.data_handler import DataHandler
+from src.prompt_splitter import PromptSplitter
 
 def inspect():
-    dh = DataHandler()
-    prompt_path = os.path.join(os.getcwd(), "Pääarviointikehote.docx")
-    
-    if not os.path.exists(prompt_path):
-        print(f"File not found: {prompt_path}")
+    splitter = PromptSplitter()
+    if not splitter.split_document():
+        print("Failed to split document")
         return
 
-    print(f"Reading: {prompt_path}")
-    common, phases = dh.parse_prompt_modules(prompt_path)
+    common = splitter.modules.get('COMMON_RULES', '')
+    phase1 = splitter.modules.get('VAIHE 1', '')
+
+    print(f"Common Rules length: {len(common)}")
+    print(f"Phase 1 length: {len(phase1)}")
+
+    search_term = "ÄSKE"
     
-    print("\n=== COMMON RULES ===")
-    print(common[:500] + "..." if len(common) > 500 else common)
-    
-    print("\n=== PHASES FOUND ===")
-    print(list(phases.keys()))
-    
-    if "VAIHE 8" in phases:
-        print("\n=== VAIHE 8 CONTENT ===")
-        print(phases["VAIHE 8"])
-        
-    if "VAIHE 9" in phases:
-        print("\n=== VAIHE 9 CONTENT ===")
-        print(phases["VAIHE 9"])
+    if search_term in common:
+        print(f"FOUND '{search_term}' in COMMON_RULES")
+        # Print context
+        idx = common.find(search_term)
+        print(f"Context: ...{common[idx:idx+200]}...")
+    else:
+        print(f"NOT FOUND '{search_term}' in COMMON_RULES")
+
+    if search_term in phase1:
+        print(f"FOUND '{search_term}' in VAIHE 1")
+        idx = phase1.find(search_term)
+        print(f"Context: ...{phase1[idx:idx+200]}...")
+    else:
+        print(f"NOT FOUND '{search_term}' in VAIHE 1")
 
 if __name__ == "__main__":
     inspect()

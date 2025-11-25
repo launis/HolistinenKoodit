@@ -17,3 +17,23 @@ interface TodistusKartta extends BaseJSON {
     relevanssi_score: number;     // 1-10 arvio
   }>;
 }
+KÄSKE: (Esimerkki oikeasta rakenteesta):
+Sinun TÄYTYY noudattaa tätä rakennetta (huomaa tarkat avaimet!):
+{
+  "hypoteesit": [
+    {
+      "id": "Väite-1",
+      "vaite_teksti": "...",
+      "loytyyko_todisteita": true
+    }
+  ],
+  "rag_todisteet": [
+    {
+      "viittaa_hypoteesiin_id": "Väite-1",
+      "perusteet": "...",
+      "konteksti_segmentti": "...",
+      "relevanssi_score": 9
+    }
+  ]
+}
+ÄLÄ käytä avaimia kuten "pisteytys", "taso" tai "kriteeri1" ellei niitä ole yllä mainittu. Käytä vain yllä olevia.

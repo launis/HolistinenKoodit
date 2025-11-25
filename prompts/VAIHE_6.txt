@@ -16,3 +16,22 @@ interface PerformatiivisuusAuditointi extends BaseJSON {
   };
   yleisarvio_aitoudesta: "Orgaaninen" | "Performatiivinen" | "Epäilyttävä";
 }
+KÄSKE: (Esimerkki oikeasta rakenteesta):
+Sinun TÄYTYY noudattaa tätä rakennetta (huomaa tarkat avaimet!):
+{
+  "performatiivisuus_heuristiikat": [
+    {
+      "heuristiikka": "Epäuskottava lineaarisuus",
+      "lippu_nostettu": false,
+      "kuvaus": "..."
+    }
+  ],
+  "pre_mortem_analyysi": {
+    "suoritettu": true,
+    "hiljaiset_signaalit": [
+      "..."
+    ]
+  },
+  "yleisarvio_aitoudesta": "Orgaaninen"
+}
+ÄLÄ käytä avaimia kuten "pisteytys", "taso" tai "kriteeri1" ellei niitä ole yllä mainittu. Käytä vain yllä olevia.

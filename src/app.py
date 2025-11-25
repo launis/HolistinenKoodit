@@ -36,7 +36,7 @@ with st.sidebar:
         api_key = st.text_input("Gemini API Key", type="password").strip()
         if api_key:
             os.environ["GOOGLE_API_KEY"] = api_key
-            st.experimental_rerun()
+            st.rerun()
             
     # Mallin valinta
     available_models = llm_service.get_available_models()
@@ -92,16 +92,23 @@ custom_prompt_file = st.file_uploader("Lataa uusi Pääarviointikehote (DOCX)", 
 prompt_data = (None, None) # (common_rules, phases_dict)
 prompt_source_path = None
 
+import tempfile
+
 if custom_prompt_file:
-    # Tallenna ladattu tiedosto väliaikaisesti
-    temp_path = os.path.join(os.getcwd(), "temp_prompt.docx")
-    with open(temp_path, "wb") as f:
-        f.write(custom_prompt_file.getbuffer())
-    prompt_source_path = temp_path
+    # Tallenna ladattu tiedosto väliaikaisesti (käytä tempfileä pilviyhteensopivuuden takia)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp_file:
+        tmp_file.write(custom_prompt_file.getbuffer())
+        prompt_source_path = tmp_file.name
     
     # Jaa dokumentti osiin
-    splitter = PromptSplitter(temp_path)
+    splitter = PromptSplitter(prompt_source_path)
     splitter.split_document()
+    
+    # Siivoa väliaikaistiedosto
+    try:
+        os.remove(prompt_source_path)
+    except:
+        pass
     
     # Lataa jaetut moduulit
     prompt_modules = splitter.get_prompt_modules()

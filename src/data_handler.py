@@ -31,7 +31,7 @@ class DataHandler:
             return stringio.read()
 
     def _read_pdf(self, file_obj):
-        """Lukee tekstin PDF-tiedostosta."""
+        """Lukee tekstin PDF-tiedostosta käyttäen PyPDF2."""
         try:
             reader = PyPDF2.PdfReader(file_obj)
             text = ""

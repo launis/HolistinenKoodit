@@ -118,6 +118,10 @@ class AssessmentContext:
         if phase_key == "VAIHE 9":
             prompt += "\\n\\nTÄRKEÄÄ: Sinun TÄYTYY sisällyttää raporttiin VAIHEEN 8 antamat pisteet selkeänä taulukkona tai listana. Älä jätä niitä pois."
 
+        # OPTIMOINTI: Vaihe 1 (Input Sanitization) ei saa kopioida koko tekstiä, koska se ylittää token-rajat.
+        if phase_key == "VAIHE 1":
+            prompt += "\\n\\nOPTIMOINTI-OHJE: ÄLÄ kopioi tiedostojen sisältöä 'data'-kenttiin, jos ne ovat pitkiä. Sen sijaan palauta tiedostonimi muodossa '{{FILE: tiedostonimi}}'. Esimerkiksi: \"keskusteluhistoria\": \"{{FILE: Keskusteluhistoria.pdf}}\". Järjestelmä hakee sisällön automaattisesti."
+
         return prompt
 
     def build_combined_prompt(self, phase_keys):

@@ -32,3 +32,40 @@ interface TuomioJaPisteet extends BaseJSON {
   };
   kriittiset_havainnot_yhteenveto: string[];
 }
+KÄSKE: (Esimerkki oikeasta rakenteesta):
+Sinun TÄYTYY noudattaa tätä rakennetta (huomaa tarkat avaimet!):
+{
+  "konfliktin_ratkaisut": [
+    {
+      "konflikti": "...",
+      "ratkaisu_malli": "POPPER",
+      "perustelu": "..."
+    }
+  ],
+  "mestaruus_poikkeama": {
+    "tunnistettu": false,
+    "perustelu": ""
+  },
+  "aitous_epaily": {
+    "automaattinen_lippu": false,
+    "viesti_hitl:lle": ""
+  },
+  "pisteet": {
+    "analyysi_ja_prosessi": {
+      "arvosana": 3,
+      "perustelu": "..."
+    },
+    "arviointi_ja_argumentaatio": {
+      "arvosana": 2,
+      "perustelu": "..."
+    },
+    "synteesi_ja_luovuus": {
+      "arvosana": 4,
+      "perustelu": "..."
+    }
+  },
+  "kriittiset_havainnot_yhteenveto": [
+    "Havainto 1..."
+  ]
+}
+ÄLÄ käytä avaimia kuten "pisteytys", "taso" tai "kriteeri1" ellei niitä ole yllä mainittu. Käytä vain yllä olevia.

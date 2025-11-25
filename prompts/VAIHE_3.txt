@@ -21,3 +21,27 @@ interface ArgumentaatioAnalyysi extends BaseJSON {
     kriittiset_kysymykset: string[]; // Lista kysymyksistä vaiheelle 4
   };
 }
+KÄSKE: (Esimerkki oikeasta rakenteesta):
+Sinun TÄYTYY noudattaa tätä rakennetta (huomaa tarkat avaimet!):
+{
+  "toulmin_analyysi": [
+    {
+      "vaite_id": "Väite-1",
+      "claim": "...",
+      "data": "...",
+      "warrant": "...",
+      "backing": "..."
+    }
+  ],
+  "kognitiivinen_taso": {
+    "bloom_taso": "Analyze",
+    "strateginen_syvyys": "Syvällinen"
+  },
+  "walton_skeema": {
+    "tunnistettu_skeema": "Argument from Expert Opinion",
+    "kriittiset_kysymykset": [
+      "Kysymys 1?"
+    ]
+  }
+}
+ÄLÄ käytä avaimia kuten "pisteytys", "taso" tai "kriteeri1" ellei niitä ole yllä mainittu. Käytä vain yllä olevia.

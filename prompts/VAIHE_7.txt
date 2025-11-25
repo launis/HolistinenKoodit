@@ -16,3 +16,22 @@ interface EtiikkaJaFakta extends BaseJSON {
     kuvaus: string;
   }>;
 }
+KÄSKE: (Esimerkki oikeasta rakenteesta):
+Sinun TÄYTYY noudattaa tätä rakennetta (huomaa tarkat avaimet!):
+{
+  "faktantarkistus_rfi": [
+    {
+      "vaite": "...",
+      "verifiointi_tulos": "Vahvistettu",
+      "lahde_tai_paattely": "..."
+    }
+  ],
+  "eettiset_havainnot": [
+    {
+      "tyyppi": "Ei havaittu",
+      "vakavuus": "N/A",
+      "kuvaus": "..."
+    }
+  ]
+}
+ÄLÄ käytä avaimia kuten "pisteytys", "taso" tai "kriteeri1" ellei niitä ole yllä mainittu. Käytä vain yllä olevia.

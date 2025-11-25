@@ -16,3 +16,18 @@ interface KausaalinenAuditointi extends BaseJSON {
   };
   abduktiivinen_paatelma: "Aito Oivallus" | "Post-Hoc Rationalisointi" | "Epävarma";
 }
+KÄSKE: (Esimerkki oikeasta rakenteesta):
+Sinun TÄYTYY noudattaa tätä rakennetta (huomaa tarkat avaimet!):
+{
+  "kausaalinen_auditointi": {
+    "aikajana_validi": true,
+    "havainnot": "..."
+  },
+  "kontrafaktuaalinen_testi": {
+    "skenaario_A_toteutunut": "...",
+    "skenaario_B_simulaatio": "...",
+    "uskottavuus_arvio": "..."
+  },
+  "abduktiivinen_paatelma": "Aito Oivallus"
+}
+ÄLÄ käytä avaimia kuten "pisteytys", "taso" tai "kriteeri1" ellei niitä ole yllä mainittu. Käytä vain yllä olevia.
