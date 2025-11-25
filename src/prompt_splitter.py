@@ -186,6 +186,31 @@ Sinun TÄYTYY noudattaa tätä rakennetta (huomaa tarkat avaimet!):
         
         # print(f"✓ Tallennettu {len(self.modules)} tiedostoa kansioon {output_dir}")
 
+    def load_from_disk(self, input_dir="prompts"):
+        """Lataa moduulit tekstitiedostoista (sivuuttaa DOCX:n)."""
+        if not os.path.exists(input_dir):
+            return False
+            
+        try:
+            # Lataa yleiset säännöt
+            common_path = os.path.join(input_dir, "Yleiset_säännöt.txt")
+            if os.path.exists(common_path):
+                with open(common_path, "r", encoding="utf-8") as f:
+                    self.modules['COMMON_RULES'] = f.read()
+            
+            # Lataa vaiheet
+            for i in range(1, 10):
+                filename = f"VAIHE_{i}.txt"
+                path = os.path.join(input_dir, filename)
+                if os.path.exists(path):
+                    with open(path, "r", encoding="utf-8") as f:
+                        self.modules[f'VAIHE {i}'] = f.read()
+            
+            return len(self.modules) > 0
+        except Exception as e:
+            print(f"Virhe ladattaessa levyltä: {e}")
+            return False
+
 
 def split_prompt_on_startup(source_file="Pääarviointikehote.docx"):
     """

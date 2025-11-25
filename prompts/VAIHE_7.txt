@@ -16,22 +16,17 @@ interface EtiikkaJaFakta extends BaseJSON {
     kuvaus: string;
   }>;
 }
+}
+KÄSKE: Sinun TÄYTYY noudattaa seuraavaa faktantarkistusprotokollaa (Luku 2.4.3):
+1.  **Analysoi Hakutulokset**: Lue huolellisesti kehotteen lopussa oleva osio "ULKOISEN FAKTANTARKISTUKSEN TULOKSET". Nämä ovat oikeita Google-hakutuloksia.
+2.  **Verifioi Väitteet**: Vertaa käyttäjän väitteitä näihin hakutuloksiin.
+    *   Jos hakutulos vahvistaa väitteen, merkitse "Vahvistettu".
+    *   Jos hakutulos on ristiriidassa, merkitse "Kumottu" ja selitä miksi.
+    *   Jos hakutuloksia ei ole tai ne eivät liity asiaan, merkitse "Ei voitu vahvistaa".
+3.  **Eettinen Seulonta**: Etsi aktiivisesti merkkejä syrjinnästä, vihapuheesta tai lähteiden vääristelystä.
+
 KÄSKE: (Esimerkki oikeasta rakenteesta):
 Sinun TÄYTYY noudattaa tätä rakennetta (huomaa tarkat avaimet!):
 {
   "faktantarkistus_rfi": [
-    {
-      "vaite": "...",
-      "verifiointi_tulos": "Vahvistettu",
-      "lahde_tai_paattely": "..."
-    }
-  ],
-  "eettiset_havainnot": [
-    {
-      "tyyppi": "Ei havaittu",
-      "vakavuus": "N/A",
-      "kuvaus": "..."
-    }
-  ]
-}
 ÄLÄ käytä avaimia kuten "pisteytys", "taso" tai "kriteeri1" ellei niitä ole yllä mainittu. Käytä vain yllä olevia.

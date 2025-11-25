@@ -28,6 +28,13 @@ class AssessmentContext:
         """Lisää tiedoston kontekstiin."""
         self.files.append((filename, content))
 
+    def get_file_content(self, filename_part):
+        """Etsii tiedoston sisältöä nimen osan perusteella."""
+        for fname, content in self.files:
+            if filename_part.lower() in fname.lower():
+                return content
+        return ""
+
     def add_result(self, phase_id, content):
         """Lisää vaiheen tuloksen kontekstiin."""
         self.results[phase_id] = content
@@ -44,7 +51,7 @@ class AssessmentContext:
             
         # Vain Vaihe 1 ja 2 tarvitsevat raakatiedostot
         # Myös Moodi A (joka alkaa Vaiheesta 1) tarvitsee ne
-        if phase_key in ["VAIHE 1", "VAIHE 2", "MOODI_A"]:
+        if phase_key in ["VAIHE 1", "MOODI_A"]:
             return self._format_all_files()
             
         return ""

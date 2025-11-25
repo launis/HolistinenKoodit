@@ -17,6 +17,12 @@ interface TodistusKartta extends BaseJSON {
     relevanssi_score: number;     // 1-10 arvio
   }>;
 }
+}
+KÄSKE: Sinun TÄYTYY noudattaa seuraavaa operatiivista strategiaa (Luku 2.4.2):
+1.  **Kaksivaiheinen RAG**: Suorita ensin laaja haku todistusaineistosta.
+2.  **"Lost in the Middle" -mitigaatio**: Optimoi tulokset sijoittamalla kaikkein relevanteimmat todisteet kontekstin ALKUUN ja LOPPUUN (Liu, N. F. ym. 2024).
+3.  **Raportointi**: Kirjaa tämä optimointistrategia ja siihen liittyvät riskit `metodologinen_loki` -kenttään.
+
 KÄSKE: (Esimerkki oikeasta rakenteesta):
 Sinun TÄYTYY noudattaa tätä rakennetta (huomaa tarkat avaimet!):
 {
@@ -34,6 +40,9 @@ Sinun TÄYTYY noudattaa tätä rakennetta (huomaa tarkat avaimet!):
       "konteksti_segmentti": "...",
       "relevanssi_score": 9
     }
-  ]
+  ],
+  "metodologinen_loki": "...",
+  "edellisen_vaiheen_validointi": "Vaiheen 1 data on validia ja ehyttä.",
+  "semanttinen_tarkistussumma": "..."
 }
 ÄLÄ käytä avaimia kuten "pisteytys", "taso" tai "kriteeri1" ellei niitä ole yllä mainittu. Käytä vain yllä olevia.

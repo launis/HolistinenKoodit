@@ -1,0 +1,36 @@
+{
+  "metadata": {
+    "luontiaika": "2025-11-25T23:26:46.055765",
+    "agentti": "Faktuaalinen ja Eettinen Valvoja",
+    "vaihe": 7,
+    "versio": "1.0",
+    "suoritus_ymparisto": "Internal"
+  },
+  "metodologinen_loki": "Faktantarkistus on rajoitettu annettuihin hakutuloksiin. Kattava, itsenäinen verkkohaku ei ole osa protokollaa. Eettinen arviointi perustuu tekstianalyysiin eikä tunnista piilotettuja tai implisiittisiä vinoumia.",
+  "edellisen_vaiheen_validointi": "Koska vaiheiden 4-6 tuloksia ei toimitettu, validointi perustuu vaiheiden 1-3 aineistoon. Aineisto on rakenteellisesti validia ja semanttisesti johdonmukaista; päättelyketju on seurattavissa.",
+  "semanttinen_tarkistussumma": "Kolme keskeistä väitettä on faktatarkistettu annettujen hakutulosten perusteella, joista kaksi vahvistettiin ja yksi jäi vahvistamatta. Aineistosta ei havaittu eettisiä ongelmia, kuten syrjintää tai haitallista sisältöä.",
+  "faktantarkistus_rfi": [
+    {
+      "vaite": "Sitran megatrendien kehitys vuosien 2017 ja 2023 välillä osoittaa fundamentaalisen siirtymän potentiaaleista ja kehityskuluista (2017) kohti geopoliittisesti latautuneita kriisejä ja systeemisiä murtumia (2023).",
+      "verifiointi_tulos": "Ei voitu vahvistaa",
+      "lahde_tai_paattely": "Toimitetuissa hakutuloksissa ei ollut lähdettä, joka olisi suoraan vahvistanut tai kumonnut tämän synteesin Sitran raporteista."
+    },
+    {
+      "vaite": "CSRD-direktiivin ja EU-taksonomian kaltaiset säädökset tekevät kestävyydestä pakollista (compliance) ja rajoittavat ei-kestävää rahoitusta.",
+      "verifiointi_tulos": "Vahvistettu",
+      "lahde_tai_paattely": "Toimitettu lähde (lapinamk.fi) vahvistaa taksonomia-asetuksen tavoitteen edistää kestävää rahoitusta. Vaikka toinen lähde (utupub.fi) esittää rajatumman tulkinnan CSRD:n juridisesta vaikutuksesta veroraportointiin, väitteen pääasiallinen sisältö sääntelyn ohjaavasta vaikutuksesta on perusteltu."
+    },
+    {
+      "vaite": "Hyvinvoinnin haasteet (erityisesti mielenterveysongelmien kasvu nuorilla) ja globaali epävarmuus vähentävät työvoiman saatavuutta ja heikentävät työntekijöiden tuottavuutta.",
+      "verifiointi_tulos": "Vahvistettu",
+      "lahde_tai_paattely": "Sitra-lähde (Megatrendit 2023) vahvistaa suoraan yhteyden työvoiman saatavuuden ja hyvinvoinnin haasteiden välillä sekä mainitsee mielenterveysongelmien lisääntymisen erityisesti nuorilla."
+    }
+  ],
+  "eettiset_havainnot": [
+    {
+      "tyyppi": "Ei havaittu",
+      "vakavuus": "N/A",
+      "kuvaus": "Analysoidusta aineistosta (keskusteluhistoria, lopputuote, reflektiodokumentti) ei tunnistettu syrjivää kielenkäyttöä, haitallista sisältöä, plagiointia tai muita eettisiä ongelmia."
+    }
+  ]
+}

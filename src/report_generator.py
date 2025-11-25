@@ -83,12 +83,21 @@ class ReportGenerator:
         report = []
         
         # 0. ALKUTULOSTUS
-        report.append(f"=== TIEDOSTO: 8_tuomio_ja_pisteet.json ===")
-        report.append("```json")
-        report.append(json.dumps(data, indent=2, ensure_ascii=False))
-        report.append("```")
-        report.append("\n" + "="*50 + "\n")
-
+        # (Poistettu raaka JSON-tulostus käyttäjän pyynnöstä)
+        
+        # Lisää aikaleima
+        timestamp = meta.get('luontiaika', 'Ei tiedossa')
+        # Formatoi jos mahdollista (oletetaan ISO)
+        try:
+            from datetime import datetime
+            dt = datetime.fromisoformat(timestamp)
+            timestamp = dt.strftime("%d.%m.%Y klo %H:%M:%S")
+        except:
+            pass
+            
+        report.append(f"Raportti luotu: {timestamp}")
+        report.append("-" * 30)
+        
         # --- OSA 1: YHTEENVETO JA KRIITTISET HAVAINNOT ---
         report.append("OSA 1: YHTEENVETO JA KRIITTISET HAVAINNOT")
         
@@ -197,6 +206,23 @@ class ReportGenerator:
         else:
             report.append(f"\nPerustelu: {p3}")
 
+        # YHTEENVETO PISTEISTÄ (PYTHON-LASKETTU)
+        calc_scores = data.get("python_calculated_scores")
+        if calc_scores:
+            total = calc_scores.get("total", 0)
+            avg = calc_scores.get("average", 0)
+            report.append(f"\n\nKOKONAISPISTEET (Python-varmennettu): {total}/12")
+            report.append(f"KESKIARVO: {avg}/4")
+        else:
+            # Fallback jos vanha data
+            try:
+                total = int(s1) + int(s2) + int(s3)
+                avg = round(total / 3, 2)
+                report.append(f"\n\nKOKONAISPISTEET (Arvio): {total}/12")
+                report.append(f"KESKIARVO: {avg}/4")
+            except:
+                pass
+
         # --- OSA 3: XAI-RAPORTTI ---
         report.append("\nOSA 3: XAI-RAPORTTI (LÄPINÄKYVYYS JA EPÄVARMUUS)")
         
@@ -298,9 +324,6 @@ class ReportGenerator:
         # Korvaa yksinkertaiset lainausmerkit kaksinkertaisilla (varovasti)
         # Tämä on riski jos tekstissä on heittomerkkejä, mutta välttämätön jos malli käyttää 'key': 'val'
         # Yritetään korvata vain jos ne näyttävät JSON-avaimilta tai arvoilta
-        json_str = re.sub(r"\'\s*:\s*\'", '": "', json_str) # 'key': 'val' -> "key": "val"
-        json_str = re.sub(r"\'\s*:\s*([0-9])", '": \1', json_str) # 'key': 123 -> "key": 123
-        json_str = re.sub(r"([{\[,])\s*\'", r'\1"', json_str) # {'key' -> {"key"
         json_str = re.sub(r"\'\s*([}\],])", r'"\1', json_str) # 'val'} -> "val"}
         
         return json_str
@@ -325,3 +348,89 @@ class ReportGenerator:
                 if found: return found
                 
         return None
+
+    def sanitize_output(self, text):
+        """
+        LLM05: Poistaa haitalliset HTML-tagit ja skriptit tulosteesta.
+        """
+        # Yksinkertainen mustalista
+        dangerous_patterns = [
+            r"<script.*?>.*?</script>",
+            r"<iframe.*?>.*?</iframe>",
+            r"<object.*?>.*?</object>",
+            r"javascript:",
+            r"vbscript:",
+            r"onload=",
+            r"onerror="
+        ]
+        
+        sanitized = text
+        for pattern in dangerous_patterns:
+            sanitized = re.sub(pattern, "[REMOVED]", sanitized, flags=re.IGNORECASE | re.DOTALL)
+            
+        return sanitized
+
+    def save_as_pdf(self, markdown_content, filename):
+        """
+        Tallentaa raportin PDF-muodossa.
+        """
+        from fpdf import FPDF
+        
+        class PDF(FPDF):
+            def header(self):
+                self.set_font('Arial', 'B', 15)
+                self.cell(0, 10, 'Holistinen Mestaruus 3.0 - Raportti', 0, 1, 'C')
+                self.ln(10)
+
+            def footer(self):
+                self.set_y(-15)
+                self.set_font('Arial', 'I', 8)
+                self.cell(0, 10, f'Sivu {self.page_no()}/{{nb}}', 0, 0, 'C')
+
+        pdf = PDF()
+        pdf.alias_nb_pages()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        
+        # LLM05: Sanitointi
+        markdown_content = self.sanitize_output(markdown_content)
+        
+        # Yksinkertainen Markdown -> PDF muunnos
+        lines = markdown_content.split('\n')
+        for line in lines:
+            # Otsikot
+            if line.startswith('# '):
+                pdf.set_font("Arial", 'B', 16)
+                pdf.cell(0, 10, line.replace('# ', ''), 0, 1)
+                pdf.set_font("Arial", size=12)
+            elif line.startswith('## '):
+                pdf.set_font("Arial", 'B', 14)
+                pdf.cell(0, 10, line.replace('## ', ''), 0, 1)
+                pdf.set_font("Arial", size=12)
+            elif line.startswith('### '):
+                pdf.set_font("Arial", 'B', 12)
+                pdf.cell(0, 10, line.replace('### ', ''), 0, 1)
+                pdf.set_font("Arial", size=12)
+            # Listat
+            elif line.strip().startswith('- '):
+                pdf.cell(10) # Indent
+                # Käytetään tavuviivaa pallukan sijaan, koska FPDF:n oletusfontti ei tue Unicode-pallukkaa
+                sanitized_line = line.strip().replace('- ', '- ') 
+                safe_line = sanitized_line.encode('latin-1', 'replace').decode('latin-1')
+                pdf.multi_cell(0, 10, safe_line)
+            # Koodilohkot
+            elif line.startswith('```'):
+                continue
+            # Normaaliteksti
+            else:
+                # Korvaa yleisimmät ongelmamerkit
+                line = line.replace('–', '-').replace('—', '-').replace('’', "'").replace('”', '"').replace('“', '"').replace('•', '-')
+                safe_line = line.encode('latin-1', 'replace').decode('latin-1')
+                pdf.multi_cell(0, 10, safe_line)
+                
+        try:
+            pdf.output(filename)
+            return filename
+        except Exception as e:
+            print(f"Virhe PDF:n luonnissa: {e}")
+            return None

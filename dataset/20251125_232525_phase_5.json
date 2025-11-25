@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "luontiaika": "2025-11-25T23:25:25.969736",
+    "agentti": "Kausaalinen Analyytikko",
+    "vaihe": 5,
+    "versio": "1.0"
+  },
+  "metodologinen_loki": "RAJOITUS: Järjestelmä ei kykene muodolliseen L3-tason kausaaliseen päättelyyn, vaikka L3-simulaatioita käytetään. Riski performatiivisen reflektion tunnistamatta jäämisestä on kohonnut.",
+  "edellisen_vaiheen_validointi": "Vaiheen 3 Toulmin-analyysi on johdonmukainen ja perustuu vankasti Vaiheen 2 todistusaineistoon. Päättelyketju on pätevä ja loogisesti ankkuroitu dataan.",
+  "semanttinen_tarkistussumma": "Kausaalinen auditointi vahvistaa, että käyttäjän 'supermegatrendit'-oivallus oli aito ja syy-seuraussuhteessa lopputuloksen laadun paranemiseen. Temporaalinen analyysi, kontrafaktuaalinen testi ja abduktiivinen päättely tukevat kaikki johtopäätöstä, että kyseessä on aito oivallus eikä jälkikäteinen rationalisointi.",
+  "kausaalinen_auditointi": {
+    "aikajana_validi": true,
+    "havainnot": "Käyttäjän pyyntö 'supermegatrendejä' esiintyy keskusteluhistoriassa selkeästi ennen kuin tekoäly tuottaa loppuraportin rakenteen tämän käsitteen ympärille. Syy-seuraussuhde on ajallisesti validi, sillä syy ('supermegatrendit'-pyyntö) edeltää seurausta (synteesiin perustuva raportti)."
+  },
+  "kontrafaktuaalinen_testi": {
+    "skenaario_A_toteutunut": "Käyttäjä esitti syntetisoivan käsitteen 'supermegatrendit', mikä ohjasi tekoälyä luomaan uuden, tiivistetyn rakenteen loppuraportille ja yhdistelemään aiemmin erillisiä teemoja.",
+    "skenaario_B_simulaatio": "Ilman 'supermegatrendit'-käsitettä tekoäly olisi todennäköisesti jatkanut aiempien tietojen listaamista ja tiivistämistä ilman uutta, yhdistävää näkökulmaa. Lopputuloksesta olisi puuttunut käyttäjän tuoma synteesitaso.",
+    "uskottavuus_arvio": "Skenaario B on erittäin uskottava. Käyttäjän kehotteen luova rajoite oli ratkaiseva kausaalinen tekijä lopputuloksen laadun ja rakenteen kannalta."
+  },
+  "abduktiivinen_paatelma": "Aito Oivallus"
+}

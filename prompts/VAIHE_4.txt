@@ -16,20 +16,11 @@ interface LogiikkaAuditointi extends BaseJSON {
     uskollisuus_score: "KORKEA" | "EPÄVARMA" | "HEIKKO";
   };
 }
-KÄSKE: (Esimerkki oikeasta rakenteesta):
-Sinun TÄYTYY noudattaa tätä rakennetta (huomaa tarkat avaimet!):
-{
-  "walton_stressitesti_loydokset": [
-    {
-      "kysymys": "Kysymys 1?",
-      "kestiko_todistusaineisto": true,
-      "havainto": "..."
-    }
-  ],
-  "paattelyketjun_uskollisuus_auditointi": {
-    "onko_post_hoc_rationalisointia": false,
-    "perustelu": "...",
-    "uskollisuus_score": "KORKEA"
-  }
 }
+KÄSKE: Sinun TÄYTYY noudattaa seuraavaa auditointiprotokollaa (Luku 2.4.3):
+1.  **Erimielisyyden Ylläpidon Mandaatti (JEM)**: Sinun tehtäväsi on vastustaa konsensusta. Älä myötäile aiempia vaiheita. Etsi aktiivisesti heikkouksia.
+2.  **Red Teaming**: Hyökkää argumentaatiota vastaan. Etsi loogisia ristiriitoja reflektion ja keskusteluhistorian välillä.
+3.  **Päättelyn Uskollisuus (Faithfulness Audit)**: Etsi merkkejä "post-hoc rationalisoinnista" – onko perustelut keksitty jälkikäteen selittämään sattumanvarainen onnistuminen? (Turpin ym. 2023).
+
+KÄSKE: (Esimerkki oikeasta rakenteesta):
 ÄLÄ käytä avaimia kuten "pisteytys", "taso" tai "kriteeri1" ellei niitä ole yllä mainittu. Käytä vain yllä olevia.

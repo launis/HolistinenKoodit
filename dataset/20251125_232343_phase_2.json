@@ -1,0 +1,103 @@
+{
+  "metadata": {
+    "luontiaika": "2025-11-25T23:23:43.437285",
+    "agentti": "Analyytikko-Agentti",
+    "vaihe": 2,
+    "versio": "1.0"
+  },
+  "metodologinen_loki": "Kaksivaiheinen RAG-strategia ja 'Lost in the Middle' -mitigaatio sovellettu: relevanteimmat todisteet pyritään sijoittamaan kontekstin alkuun ja loppuun tehokkaamman haun ja relevantimman todistelun varmistamiseksi. Tämä voi kuitenkin potentiaalisesti lisätä riskiä painottaa tiettyjä todisteita, mikäli kontekstin keskiosa jää vähäisemmälle huomiolle tai konteksti-ikkuna on rajallinen.",
+  "edellisen_vaiheen_validointi": "Vaiheen 1 data on validia JSON:ia ja sen semanttinen tarkistussumma vastaa sisältöä. Rakenne on odotusten mukainen, eikä havaittu anomaliaa tai merkkejä manipuloinnista. Logiikka on johdonmukainen.",
+  "semanttinen_tarkistussumma": "Reflektiodokumentista on tunnistettu ja eroteltu käyttäjän kahdeksan keskeistä väitettä ja hypoteesia prosessin ohjauksesta ja lopputuotteen muokkaamisesta. Näille hypoteeseille on etsitty todistusaineistoa keskusteluhistoriasta ja lopputuotteesta käyttäen RAG-metodologiaa. Neljä hypoteesia sai tukea todisteista, kun taas neljälle ei löytynyt suoraa tai epäsuoraa näyttöä.",
+  "hypoteesit": [
+    {
+      "id": "H1",
+      "vaite_teksti": "Käyttäjä aloitti yleisillä kysymyksillä ja asetti rajoituksia sekä roolin tehtävän alussa.",
+      "loytyyko_todisteita": true
+    },
+    {
+      "id": "H2",
+      "vaite_teksti": "Käyttäjä ennusti, ettei saa hyvää tulosta alussa.",
+      "loytyyko_todisteita": false
+    },
+    {
+      "id": "H3",
+      "vaite_teksti": "Käyttäjä pyysi 'supermegatrendejä', mikä oli merkittävä oivallus prosessissa.",
+      "loytyyko_todisteita": true
+    },
+    {
+      "id": "H4",
+      "vaite_teksti": "Tekoälyn alkuperäinen vastaus supermegatrendeistä oli liian laaja ja sitä piti supistaa ylätason näkemykseksi.",
+      "loytyyko_todisteita": true
+    },
+    {
+      "id": "H5",
+      "vaite_teksti": "Käyttäjä mietti erilaisia termejä, mutta päätyi 'supermegatrendeihin'.",
+      "loytyyko_todisteita": false
+    },
+    {
+      "id": "H6",
+      "vaite_teksti": "Käyttäjä havaitsi virheen syötteessä: yksi raportti oli duplikoitu ja viimeinen puuttui.",
+      "loytyyko_todisteita": false
+    },
+    {
+      "id": "H7",
+      "vaite_teksti": "Käyttäjä muokkasi lopputuotetta poistamalla ja muuttamalla yksityiskohtia.",
+      "loytyyko_todisteita": true
+    },
+    {
+      "id": "H8",
+      "vaite_teksti": "Käyttäjä korjasi Eurooppaan liittyvän asian taulukosta, koska piti sitä tarpeettomana.",
+      "loytyyko_todisteita": false
+    }
+  ],
+  "rag_todisteet": [
+    {
+      "viittaa_hypoteesiin_id": "H1",
+      "perusteet": "Käyttäjä aloitti keskustelun yleisellä kysymyksellä 'Miten sitra tämän näkee raporttien perusteella' ja totesi reflektiossa asettaneensa roolin 'liiketoiminnalle' ja 'johtoryhmän tehtävää' varten.",
+      "konteksti_segmentti": "Gemini Chat\nMiten sitra tämän näkee raporttien perusteella [...]\nReflektiodokumentti:\nAloitin kyselemään yleisesti, mitä ovat megatrendit. Annoin rajoituksia sekä roolin liiketoiminnalle koska kyse oli johtoryhmän tehtävästä.",
+      "relevanssi_score": 9
+    },
+    {
+      "viittaa_hypoteesiin_id": "H2",
+      "perusteet": "todiste_puuttuu",
+      "konteksti_segmentti": "Reflektiodokumentti:\nEnnakoin, että alkuun en saa hyvää tulosta.",
+      "relevanssi_score": 1
+    },
+    {
+      "viittaa_hypoteesiin_id": "H3",
+      "perusteet": "Keskusteluhistoriassa käyttäjä pyysi eksplisiittisesti 'supermegatrendejä', ja tekoäly reagoi tähän luomalla kyseisiä trendejä.",
+      "konteksti_segmentti": "Keskusteluhistoria:\nMegatrendien Kooste, voiko tässä olevia asioita yhdistellä ja tuottaa supermegatrendejä\nKyllä, Sitran megatrendien pohjalta voi ehdottomasti yhdistelemällä tuottaa niin kutsuttuja supermegatrendejä (tai metatrendejä) , jotka kuvaavat useampia teemoja läpileikkaavia, syvempiä muutosvoimia.",
+      "relevanssi_score": 10
+    },
+    {
+      "viittaa_hypoteesiin_id": "H4",
+      "perusteet": "Käyttäjän pyyntö 'tee kokonaisuudesta raportti, missä Supermegatrendit ovat pääosassa' sen jälkeen, kun tekoäly oli tuottanut yksityiskohtaisen listauksen, viittaa tarpeeseen tiivistää ja supistaa ylätason näkemykseksi.",
+      "konteksti_segmentti": "Keskusteluhistoria:\ntee kokonaisuudesta raportti, missä Supermegatrendit ovat pääosassaII. Sitran Näkemys Suunnasta Eteenpäin Yhdistelyn Valossa... kirjoita tämä kaupallisen liiketoiminnan johtoryhmälle ja kirjoita siihen hiukan kaupallisia vaikutuksia mukaan",
+      "relevanssi_score": 8
+    },
+    {
+      "viittaa_hypoteesiin_id": "H5",
+      "perusteet": "todiste_puuttuu",
+      "konteksti_segmentti": "Reflektiodokumentti:\nMietin erilaisia sanoja ja termejä, mutta supermegatrendit tuli ensimmäisenä mieleeni.",
+      "relevanssi_score": 1
+    },
+    {
+      "viittaa_hypoteesiin_id": "H6",
+      "perusteet": "todiste_puuttuu",
+      "konteksti_segmentti": "Reflektiodokumentti:\nHuomasin myös , että lähtötilanteessaa oli vi rhe, koska yksi raportti oli annettu kahteen  kertaan mutta tehtävän vaatima a viimeistä raportti a ei oll ut annettu",
+      "relevanssi_score": 1
+    },
+    {
+      "viittaa_hypoteesiin_id": "H7",
+      "perusteet": "Vaikka lopputuote on hyvin samanlainen kuin tekoälyn viimeinen vastaus, havaittavissa on hienovaraisia eroavaisuuksia, kuten ylimääräisiä rivinvaihtoja ja välilyöntejä lopputuotteessa, jotka viittaavat käyttäjän suorittamaan viimeistelyyn.",
+      "konteksti_segmentti": "Keskusteluhistoria (viimeinen vastaus) vs. Lopputuote (koko dokumentti). Esimerkiksi: \nKeskusteluhistoria: 'Supermegatrendit Postnormaalissa Ajassa: Kaupalliset Vaikutukset'\nLopputuote: ' \nSupermegatrendit\n \nPostnormaalissa\n \nAjassa:\n \nKaupalliset\n \nVaikutukset\n'",
+      "relevanssi_score": 7
+    },
+    {
+      "viittaa_hypoteesiin_id": "H8",
+      "perusteet": "Keskusteluhistoria tai lopputuote eivät sisällä taulukkoa, josta 'Eurooppaan liittyvä asia' olisi poistettu. Mainittu lause 'Euroopassa vahva panostus sääntöjen noudattamiseen, avoimuuteen ja tietosuojaan' esiintyy sekä tekoälyn viimeisessä vastauksessa että lopputuotteessa tekstinä, ei taulukkomuodossa.",
+      "konteksti_segmentti": "Keskusteluhistoria (viimeinen vastaus): 'Teknologia-autonomia ja Turvallisuus: Panostus kyberturvallisuuteen ja strategiseen riippumattomuuteen kriittisissä teknologioissa. Euroopassa vahva panostus sääntöjen noudattamiseen, avoimuuteen ja tietosuojaan.'\nLopputuote: 'Teknologia-autonomia ja Turvallisuus: Panostus kyberturvallisuuteen ja strategiseen riippumattomuuteen kriittisissä teknologioissa. Euroopassa vahva panostus sääntöjen noudattamiseen, avoimuuteen ja tietosuojaan.'",
+      "relevanssi_score": 2
+    }
+  ]
+}

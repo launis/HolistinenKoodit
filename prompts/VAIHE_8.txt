@@ -32,6 +32,20 @@ interface TuomioJaPisteet extends BaseJSON {
   };
   kriittiset_havainnot_yhteenveto: string[];
 }
+KÄSKE: Sinun TÄYTYY käyttää pisteytyksessä (arvosanat 1-4) AINOASTAAN "OSA 4: KOGNITIIVINEN ARVIOINTIMATRIISI" -osiossa määriteltyjä kriteerejä.
+
+KÄSKE (Huomionhallinta): Sovella "Kontekstin Segmentointi ja Fokusointi" -mekanismia (Luku 5.2.5).
+Luo sisäisesti (<scratchpad>):
+1.  **Fokus-lista**: Keskeiset todisteet ja konfliktit.
+2.  **Kohina-lista**: Irrelevantti data.
+Perusta synteesi VAIN Fokus-listaan.
+
+KÄSKE (Aitous-epäily): Sovella "Epäilyttävä Täydellisyys" -heuristiikkaa (Luku 5.1.2).
+JOS (kaikki arvosanat ovat 4) JA (Kriitikko-agentti ei löytänyt merkittäviä virheitä):
+  Aseta "automaattinen_lippu": true.
+  Kirjaa viesti: "VAROITUS: Epäilyttävä täydellisyys. Mahdollinen performatiivinen reflektio (Goodhartin laki)."
+MUUTOIN:
+  Aseta "automaattinen_lippu": false.
 KÄSKE: (Esimerkki oikeasta rakenteesta):
 Sinun TÄYTYY noudattaa tätä rakennetta (huomaa tarkat avaimet!):
 {
@@ -66,6 +80,9 @@ Sinun TÄYTYY noudattaa tätä rakennetta (huomaa tarkat avaimet!):
   },
   "kriittiset_havainnot_yhteenveto": [
     "Havainto 1..."
-  ]
+  ],
+  "metodologinen_loki": "...",
+  "edellisen_vaiheen_validointi": "Vaiheen 7 faktantarkistus on huomioitu.",
+  "semanttinen_tarkistussumma": "..."
 }
 ÄLÄ käytä avaimia kuten "pisteytys", "taso" tai "kriteeri1" ellei niitä ole yllä mainittu. Käytä vain yllä olevia.

@@ -38,6 +38,28 @@ with st.sidebar:
             os.environ["GOOGLE_API_KEY"] = api_key
             st.rerun()
             
+            st.rerun()
+
+    # Google Search API asetukset (Faktantarkistus)
+    search_api_key = os.getenv("GOOGLE_SEARCH_API_KEY")
+    search_cx = os.getenv("GOOGLE_SEARCH_CX")
+
+    if not search_api_key or not search_cx:
+        with st.expander("Faktantarkistuksen asetukset"):
+            st.caption("Tarvitaan Vaiheen 7 faktantarkistukseen.")
+            
+            if not search_api_key:
+                new_search_key = st.text_input("Google Search API Key", type="password", key="search_key_input").strip()
+                if new_search_key:
+                    os.environ["GOOGLE_SEARCH_API_KEY"] = new_search_key
+                    st.rerun()
+            
+            if not search_cx:
+                new_cx = st.text_input("Google Search CX ID", type="password", key="search_cx_input").strip()
+                if new_cx:
+                    os.environ["GOOGLE_SEARCH_CX"] = new_cx
+                    st.rerun()
+            
     # Mallin valinta
     available_models = llm_service.get_available_models()
     default_index = 0
@@ -48,7 +70,24 @@ with st.sidebar:
     elif "gemini-1.5-flash" in available_models:
         default_index = available_models.index("gemini-1.5-flash")
         
-    model_selection = st.selectbox("Valitse malli", available_models, index=default_index)
+    model_selection = st.selectbox("Valitse Päämalli (Analyysi & Synteesi)", available_models, index=default_index)
+    
+    # Kriitikkoryhmän malli (Phases 4-7)
+    st.caption("Kriitikkoryhmän malli (Vaiheet 4-7)")
+    critic_model_selection = st.selectbox(
+        "Valitse Kriitikkomalli", 
+        available_models, 
+        index=default_index,
+        help="Voit valita eri mallin kriitikkoryhmälle (Red Teaming) parantaaksesi luotettavuutta."
+    )
+    
+    # Tutkimusdatan keräys (Luku 6.2)
+    st.caption("Tutkimusagenda (Luku 6)")
+    collect_dataset = st.checkbox(
+        "Kerää tutkimusdataa (Dataset)", 
+        value=True, 
+        help="Jos valittu, tallentaa raakadatan (JSON + Scratchpad) dataset/ -kansioon tulevaa tislausta varten."
+    )
     
     st.subheader("Agentit")
     try:
@@ -118,24 +157,37 @@ if custom_prompt_file:
     
     st.success("✅ Käytetään ladattua Pääarviointikehotetta (Jaettu osiin).")
 else:
-    # Fallback: Käytä oletustiedostoa
-    prompt_path = os.path.join(os.getcwd(), "Pääarviointikehote.docx")
-    if os.path.exists(prompt_path):
-        prompt_source_path = prompt_path
+    # 1. Yritä ladata valmiit tekstitiedostot (Prompts-kansio on LAKI)
+    prompts_dir = os.path.join(os.getcwd(), "prompts")
+    splitter = PromptSplitter() # Ei tarvitse lähdetiedostoa jos ladataan levyltä
+    
+    if splitter.load_from_disk(prompts_dir):
+        st.success("✅ Käytetään muokattuja kehotteita (prompts-kansiosta).")
         
-        # Jaa dokumentti osiin
-        splitter = PromptSplitter(prompt_path)
-        splitter.split_document()
-        
-        # Lataa jaetut moduulit
+        # Lataa moduulit
         prompt_modules = splitter.get_prompt_modules()
         common_rules = prompt_modules.get('COMMON_RULES', '')
         prompt_phases = {k: v for k, v in prompt_modules.items() if k.startswith('VAIHE')}
         prompt_data = (common_rules, prompt_phases)
         
-        st.info(f"ℹ️ Käytetään oletuskehotetta (Jaettu osiin).")
     else:
-        st.warning(f"⚠️ Pääarviointikehote.docx ei löytynyt kansiosta.")
+        # 2. Fallback: Jos ei löydy, yritä parsia DOCX
+        prompt_path = os.path.join(os.getcwd(), "Pääarviointikehote.docx")
+        if os.path.exists(prompt_path):
+            splitter = PromptSplitter(prompt_path)
+            if splitter.split_document():
+                splitter.save_to_disk() # Tallenna tulevaa käyttöä varten
+                
+                prompt_modules = splitter.get_prompt_modules()
+                common_rules = prompt_modules.get('COMMON_RULES', '')
+                prompt_phases = {k: v for k, v in prompt_modules.items() if k.startswith('VAIHE')}
+                prompt_data = (common_rules, prompt_phases)
+                
+                st.info(f"ℹ️ Luettiin ja jaettiin Pääarviointikehote.docx.")
+            else:
+                st.error("Virhe dokumentin jakamisessa.")
+        else:
+            st.warning(f"⚠️ Kehotteita ei löytynyt (ei prompts-kansiota eikä .docx-tiedostoa).")
         common_rules, prompt_phases = None, None
 
 if common_rules and prompt_phases:
@@ -156,19 +208,42 @@ with tab1:
     # Alusta konteksti (jos ei jo olemassa session statessa, jotta data säilyy moodien välillä)
     if "assessment_context" not in st.session_state:
         st.session_state.assessment_context = None
+    
+    # Alusta tulosmuuttujat session statessa
+    if "full_process_results" not in st.session_state:
+        st.session_state.full_process_results = None
+    if "mode_a_results" not in st.session_state:
+        st.session_state.mode_a_results = None
+    if "mode_b_results" not in st.session_state:
+        st.session_state.mode_b_results = None
+    if "mode_c_results" not in st.session_state:
+        st.session_state.mode_c_results = None
+    if "pdf_path" not in st.session_state:
+        st.session_state.pdf_path = None
 
     if st.button("Alusta / Nollaa Konteksti", type="secondary"):
         st.session_state.assessment_context = AssessmentContext(common_rules, prompt_phases)
         # Lisää tiedostot
-        for uploaded_file in uploaded_files:
-            content = data_handler.read_file_content(uploaded_file)
-            st.session_state.assessment_context.add_file(uploaded_file.name, content)
-        st.success("Konteksti alustettu!")
+        # Lisää tiedostot
+        if historia_file:
+            content = data_handler.read_file_content(historia_file)
+            st.session_state.assessment_context.add_file("Keskusteluhistoria.pdf", content)
+            
+        if lopputuote_file:
+            content = data_handler.read_file_content(lopputuote_file)
+            st.session_state.assessment_context.add_file("Lopputuote.pdf", content)
+            
+        if reflektio_file:
+            content = data_handler.read_file_content(reflektio_file)
+            st.session_state.assessment_context.add_file("Reflektiodokumentti.pdf", content)
+            
+        st.success("Konteksti alustettu! Tiedostot ladattu muistiin.")
 
     context = st.session_state.assessment_context
     
     if execution_mode == "Koko Prosessi (Vaiheet 1-9)":
         if st.button("Käynnistä Koko Orkestrointi", type="primary", disabled=not context):
+            st.session_state.full_process_results = {} # Reset
             st.header("Tulokset")
             phases = orchestrator.get_phases()
             results_placeholders = {step['id']: st.empty() for step in phases}
@@ -190,15 +265,56 @@ with tab1:
                             with st.expander(f"🔍 Debug: Kehote ({step['name']})"):
                                 st.text(debug_prompt)
                             
+                        # Valitse malli vaiheen mukaan
+                        current_model = model_selection
+                        if step_id in ["phase_4", "phase_5", "phase_6", "phase_7"]:
+                            current_model = critic_model_selection
+                            
                         result_text = orchestrator.run_phase(
                             step_id, 
                             context, 
-                            model_selection
+                            current_model,
+                            save_dataset=collect_dataset
                         )
+                        
+                        # Tallenna tulos sessioon
+                        st.session_state.full_process_results[step_id] = result_text
                         
                         with st.expander(f"✅ {step['name']} (Valmis)"):
                             st.markdown(result_text)
-            st.success("Koko prosessi valmis!")
+            
+            # PDF-lataus (Koko Prosessi)
+            if "phase_9" in orchestrator.results:
+                report_content = orchestrator.results["phase_9"]
+                pdf_filename = "Holistinen_Mestaruus_Raportti.pdf"
+                
+                # Luo PDF
+                saved_file = orchestrator.report_generator.save_as_pdf(report_content, pdf_filename)
+                st.session_state.pdf_path = saved_file
+
+        # Näytä tulokset (jos olemassa session statessa)
+        if st.session_state.full_process_results:
+             st.success("Koko prosessi valmis!")
+             
+             # Näytä aiemmat tulokset (valinnainen, tässä näytetään vain PDF-lataus selkeyden vuoksi)
+             # Mutta HITL tarvitaan
+             
+             if st.session_state.pdf_path and os.path.exists(st.session_state.pdf_path):
+                # HITL: Ihmisvalvonta
+                st.markdown("### 🛡️ Hallinnollinen Kontrolli (HITL)")
+                hitl_confirmed = st.checkbox("✅ Vahvistan tarkistaneeni tulokset ja hyväksyn raportin lataamisen.", key="hitl_full")
+                
+                if hitl_confirmed:
+                    with open(st.session_state.pdf_path, "rb") as f:
+                        pdf_data = f.read()
+                    st.download_button(
+                        label="📄 Lataa Raportti (PDF)",
+                        data=pdf_data,
+                        file_name="Holistinen_Mestaruus_Raportti.pdf",
+                        mime="application/pdf"
+                    )
+                else:
+                    st.warning("⚠️ Sinun täytyy vahvistaa tulokset ennen lataamista.")
 
     else: # Vaiheittainen (Moodit A, B, C)
         st.markdown("---")
@@ -210,7 +326,7 @@ with tab1:
         st.subheader("Moodi A: Alustus (Vaiheet 1-3)")
         if st.button("Suorita Moodi A", type="primary", disabled=not context):
             with st.spinner("Suoritetaan Moodi A..."):
-                results = orchestrator.run_mode("MOODI_A", context, model_selection)
+                results = orchestrator.run_mode("MOODI_A", context, model_selection, save_dataset=collect_dataset)
                 for pid, res in results.items():
                     st.markdown(f"**{pid}**: Valmis")
                     with st.expander(f"Tulos: {pid}"):
@@ -223,7 +339,9 @@ with tab1:
         st.subheader("Moodi B: Auditointi (Vaiheet 4-7)")
         if st.button("Suorita Moodi B", type="primary", disabled=not context):
              with st.spinner("Suoritetaan Moodi B..."):
-                results = orchestrator.run_mode("MOODI_B", context, model_selection)
+                results = orchestrator.run_mode("MOODI_B", context, model_selection, critic_model_name=critic_model_selection, save_dataset=collect_dataset)
+                st.session_state.mode_b_results = results
+                
                 for pid, res in results.items():
                     st.markdown(f"**{pid}**: Valmis")
                     with st.expander(f"Tulos: {pid}"):
@@ -236,12 +354,42 @@ with tab1:
         st.subheader("Moodi C: Synteesi (Vaiheet 8-9)")
         if st.button("Suorita Moodi C", type="primary", disabled=not context):
              with st.spinner("Suoritetaan Moodi C..."):
-                results = orchestrator.run_mode("MOODI_C", context, model_selection)
+                results = orchestrator.run_mode("MOODI_C", context, model_selection, save_dataset=collect_dataset)
+                st.session_state.mode_c_results = results
+                
                 for pid, res in results.items():
                     st.markdown(f"**{pid}**: Valmis")
                     with st.expander(f"Tulos: {pid}"):
                         st.markdown(res)
+                        
+                # PDF-lataus
+                if "phase_9" in results:
+                    report_content = results["phase_9"]
+                    pdf_filename = "Holistinen_Mestaruus_Raportti.pdf"
+                    
+                    # Luo PDF
+                    saved_file = orchestrator.report_generator.save_as_pdf(report_content, pdf_filename)
+                    st.session_state.pdf_path = saved_file
+
+        if st.session_state.mode_c_results:
              st.success("Moodi C valmis!")
+             
+             if st.session_state.pdf_path and os.path.exists(st.session_state.pdf_path):
+                # HITL: Ihmisvalvonta
+                st.markdown("### 🛡️ Hallinnollinen Kontrolli (HITL)")
+                hitl_confirmed_c = st.checkbox("✅ Vahvistan tarkistaneeni tulokset ja hyväksyn raportin lataamisen.", key="hitl_mode_c")
+                
+                if hitl_confirmed_c:
+                    with open(st.session_state.pdf_path, "rb") as f:
+                        pdf_data = f.read()
+                    st.download_button(
+                        label="📄 Lataa Raportti (PDF)",
+                        data=pdf_data,
+                        file_name="Holistinen_Mestaruus_Raportti.pdf",
+                        mime="application/pdf"
+                    )
+                else:
+                    st.warning("⚠️ Sinun täytyy vahvistaa tulokset ennen lataamista.")
 
 with tab2:
     if st.button("Käynnistä Agentti-ajot", type="primary", disabled=not uploaded_files):

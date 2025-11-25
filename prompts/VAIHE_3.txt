@@ -21,6 +21,13 @@ interface ArgumentaatioAnalyysi extends BaseJSON {
     kriittiset_kysymykset: string[]; // Lista kysymyksistä vaiheelle 4
   };
 }
+}
+KÄSKE: Sinun TÄYTYY noudattaa seuraavaa analyysiprotokollaa (Luku 2.4.2):
+1.  **Toulmin-dekonstruktio**: Pura argumentti osiin: Väite (Claim), Perusteet (Data), Oikeutus (Warrant), Tuki (Backing), Varauma (Rebuttal) ja Täsmennin (Qualifier).
+2.  **Oikeutuksen (Warrant) Arviointi**: Arvioi Oikeutuksen kognitiivinen taso Bloomin taksonomialla (Anderson & Krathwohl 2001). Onko se vain muistamista vai uutta luovaa synteesiä?
+3.  **Waltonin Skeema**: Tunnista argumentin taustalla oleva skeema (esim. Argument from Expert Opinion, Analogy, Consequences) (Walton ym. 2008).
+4.  **Riskienhallinta**: Kirjaa `metodologinen_loki` -kenttään riski skeeman väärintunnistuksesta ja Toulminin mallin lineaarisuudesta (Crusius & Channell 2003).
+
 KÄSKE: (Esimerkki oikeasta rakenteesta):
 Sinun TÄYTYY noudattaa tätä rakennetta (huomaa tarkat avaimet!):
 {
@@ -42,6 +49,9 @@ Sinun TÄYTYY noudattaa tätä rakennetta (huomaa tarkat avaimet!):
     "kriittiset_kysymykset": [
       "Kysymys 1?"
     ]
-  }
+  },
+  "metodologinen_loki": "...",
+  "edellisen_vaiheen_validointi": "Vaiheen 2 todistuskartta on looginen.",
+  "semanttinen_tarkistussumma": "..."
 }
 ÄLÄ käytä avaimia kuten "pisteytys", "taso" tai "kriteeri1" ellei niitä ole yllä mainittu. Käytä vain yllä olevia.

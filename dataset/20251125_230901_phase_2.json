@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "timestamp": "2025-01-01",
+    "luontiaika": "2025-11-25T23:09:01.505498"
+  },
+  "data": {
+    "analysis": "Test analysis"
+  },
+  "pisteet": {
+    "analyysi_ja_prosessi": {
+      "arvosana": 4
+    },
+    "arviointi_ja_argumentaatio": {
+      "arvosana": 4
+    },
+    "synteesi_ja_luovuus": {
+      "arvosana": 4
+    }
+  },
+  "security_check": {
+    "uhka_havaittu": false
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "metadata": {
+    "luontiaika": "2025-11-25T23:26:04.746065",
+    "agentti": "PERFORMATIIVISUUDEN TUNNISTAJA",
+    "vaihe": 6,
+    "versio": "1.0"
+  },
+  "metodologinen_loki": "Analyysi suoritettu noudattaen Säännön 8 ja VAIHE 6:n mukaista performatiivisuuden tunnistusprotokollaa, joka sisältää heuristiikka-analyysin ja pre-mortem-analyysin. Toimivalta on tiukasti rajoitettu annettuihin ohjeisiin Säännön 2 mukaisesti.",
+  "edellisen_vaiheen_validointi": "Vaiheen 3 Toulmin-analyysi on loogisesti johdonmukainen ja perustuu vankasti aiemmissa vaiheissa validoituun todistusaineistoon. Rakenne on validi ja semanttinen tarkistussumma vastaa sisältöä.",
+  "semanttinen_tarkistussumma": "Performatiivisuuden analyysissa tunnistettiin merkittäviä epäsuhtia käyttäjän reflektion ja todistusaineiston välillä. Useat reflektion väitteet (esim. virheen korjaaminen syötteessä, taulukon muokkaaminen) ovat vailla todisteita tai suorassa ristiriidassa keskusteluhistorian kanssa. Tämä viittaa vahvasti jälkikäteiseen rationalisointiin ja arviointikriteerien optimointiin, minkä vuoksi suorituksen aitous luokitellaan performatiiviseksi.",
+  "performatiivisuus_heuristiikat": [
+    {
+      "heuristiikka": "Epäuskottava lineaarisuus",
+      "lippu_nostettu": true,
+      "kuvaus": "Prosessi eteni suoraviivaisesti ilman merkittäviä iteratiivisia haasteita tai vääriä polkuja. Vaikka tehokas, sen virheettömyys on lievästi epäilyttävää."
+    },
+    {
+      "heuristiikka": "Pinnallinen vuorovaikutus",
+      "lippu_nostettu": false,
+      "kuvaus": "Vuorovaikutus oli pääosin ohjaavaa ja tehokasta, mutta ei osoittanut erityistä kognitiivista syvyyttä tai tekoälyn päättelyn haastamista. Tämä ei kuitenkaan yksinään ole selkeä merkki performatiivisuudesta."
+    },
+    {
+      "heuristiikka": "Kognitiivinen epäsuhta",
+      "lippu_nostettu": true,
+      "kuvaus": "KRIITTINEN HAVAINTO: Reflektion ja todistusaineiston välillä on merkittävä ristiriita. Käyttäjä väittää korjanneensa 'taulukosta Eurooppaan liittyvän asian', vaikka todistusaineistossa ei ole taulukkoa ja kyseinen lause on identtinen lopputuotteessa ja tekoälyn vastauksessa. Myös muut väitteet (esim. syötevirheen havaitseminen) ovat vailla todisteita."
+    },
+    {
+      "heuristiikka": "Keinotekoinen monimutkaisuus",
+      "lippu_nostettu": false,
+      "kuvaus": "Prosessi oli pikemminkin yksinkertainen ja tehokas, ei keinotekoisen monimutkainen. Käyttäjä ei lisännyt turhia vaiheita."
+    },
+    {
+      "heuristiikka": "Matriisin optimointi",
+      "lippu_nostettu": true,
+      "kuvaus": "Reflektiodokumentin väitteet (esim. proaktiivinen suunnittelu, 'iso oivallus', lopputuotteen muokkaaminen) vastaavat epäilyttävän tarkasti arviointimatriisin kriteereitä. Todisteiden puute osalle väitteistä viittaa siihen, että reflektio on kirjoitettu optimoimaan arviointia."
+    },
+    {
+      "heuristiikka": "Itsetehostus",
+      "lippu_nostettu": false,
+      "kuvaus": "Käyttäjä kuvaa omaa oivallustaan ('iso oivallus'), mutta itsetehostus ei ole läpi leikkaavaa tai liiallista."
+    }
+  ],
+  "pre_mortem_analyysi": {
+    "suoritettu": true,
+    "hiljaiset_signaalit": [
+      "Väite taulukon korjaamisesta (H8), joka on todistusaineiston vastainen, on vahvin signaali reflektion epäaitoudesta.",
+      "Väitteet, joita ei voida todentaa (H2, H5, H6), lisäävät epäilyä siitä, että reflektio on rakennettu prosessin jälkeen paremman kuvan antamiseksi.",
+      "Väite lopputuotteen muokkaamisesta (H7) on teknisesti totta (muotoilumuutoksia), mutta reflektion kuvaus antaa ymmärtää sisällöllisempää panosta, mitä todisteet eivät tue."
+    ]
+  },
+  "yleisarvio_aitoudesta": "Performatiivinen"
+}

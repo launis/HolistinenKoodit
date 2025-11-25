@@ -16,21 +16,19 @@ interface PerformatiivisuusAuditointi extends BaseJSON {
   };
   yleisarvio_aitoudesta: "Orgaaninen" | "Performatiivinen" | "Epäilyttävä";
 }
+}
+KÄSKE: Sinun TÄYTYY noudattaa seuraavaa performatiivisuuden tunnistusprotokollaa (Luku 2.4.3):
+1.  **Heuristiikka-analyysi**: Etsi aktiivisesti seuraavia merkkejä:
+    *   **Epäuskottava lineaarisuus**: Onko prosessi liian suoraviivainen ja virheetön?
+    *   **Pinnallinen vuorovaikutus**: Onko kognitiivinen syvyys vähäistä?
+    *   **Kognitiivinen epäsuhta**: Ristiriita reflektion ja historian välillä.
+    *   **Keinotekoinen monimutkaisuus**: Turhia vaiheita näyttävyyden vuoksi.
+    *   **Matriisin optimointi**: Reflektio vastaa epäilyttävän tarkasti kriteereitä.
+    *   **Itsetehostus**: Liiallinen oman erinomaisuuden korostaminen.
+2.  **Pre-Mortem Analyysi**: Oleta, että reflektio on väärennös. Etsi todisteita, jotka tukevat tätä oletusta.
+3.  **Epäilyttävä Täydellisyys**: Jos suoritus on täydellinen ilman näkyvää kitkaa, liputa se automaattisesti.
+
 KÄSKE: (Esimerkki oikeasta rakenteesta):
-Sinun TÄYTYY noudattaa tätä rakennetta (huomaa tarkat avaimet!):
-{
-  "performatiivisuus_heuristiikat": [
-    {
-      "heuristiikka": "Epäuskottava lineaarisuus",
-      "lippu_nostettu": false,
-      "kuvaus": "..."
-    }
-  ],
-  "pre_mortem_analyysi": {
-    "suoritettu": true,
-    "hiljaiset_signaalit": [
-      "..."
-    ]
   },
   "yleisarvio_aitoudesta": "Orgaaninen"
 }

@@ -1,0 +1,52 @@
+{
+  "metadata": {
+    "luontiaika": "2025-11-25T23:24:20.060503",
+    "agentti": "Loogikko-Agentti",
+    "vaihe": 3,
+    "versio": "1.0"
+  },
+  "metodologinen_loki": "Riski argumenttiskeeman väärintunnistuksesta on olemassa, koska Waltonin mallin soveltaminen vaatii kontekstuaalista tulkintaa. Toulminin mallin lineaarisuus voi myös yksinkertaistaa monimutkaista päättelyä. Säännön 3.2 mukaisesti agentin toimivaltaa on rajoitettu vain eksplisiittisesti määriteltyihin tehtäviin, mikä vähentää 'roolivuodon' riskiä.",
+  "edellisen_vaiheen_validointi": "Vaiheen 2 todistuskartta on looginen ja hypoteesien ja todisteiden välinen linkki on selkeä. Semanttinen tarkistussumma vastaa sisältöä ja rakenne on validi JSON.",
+  "semanttinen_tarkistussumma": "Neljästä relevantista käyttäjän hypoteesista on suoritettu Toulmin-dekonstruktio, analysoitu oikeutuksen kognitiivinen taso Bloomin taksonomian mukaisesti ja tunnistettu Waltonin argumenttiskeemat. Käyttäjän toimet osoittavat strategista ohjausta, luovaa panosta ja evaluatiivista kykyä.",
+  "toulmin_analyysi": [
+    {
+      "vaite_id": "H1-argumentti",
+      "claim": "Käyttäjä aloitti yleisillä kysymyksillä ja asetti rajoituksia sekä roolin tehtävän alussa.",
+      "data": "Käyttäjä aloitti keskustelun yleisellä kysymyksellä 'Miten sitra tämän näkee raporttien perusteella' ja totesi reflektiossa asettaneensa roolin 'liiketoiminnalle' ja 'johtoryhmän tehtävää' varten.",
+      "warrant": "Proaktiivinen tehtävän kehystäminen rooleilla ja rajoituksilla sekä yleisten kysymysten asettaminen ohjaa tekoälyä tehokkaasti ja ennakoivasti.",
+      "backing": "Käyttäjän reflektio kuvaa näitä toimia tarkoituksellisina, ja keskusteluhistoria vahvistaa kysymyksen asettamisen. Tämä on linjassa hyvien kehotusinsinööritaitojen kanssa, joissa tehtävän alussa asetetaan rajoituksia."
+    },
+    {
+      "vaite_id": "H3-argumentti",
+      "claim": "Käyttäjän pyyntö 'supermegatrendejä' oli merkittävä oivallus prosessissa.",
+      "data": "Keskusteluhistoriassa käyttäjä pyysi eksplisiittisesti 'supermegatrendejä', ja tekoäly reagoi tähän luomalla kyseisiä trendejä.",
+      "warrant": "Uuden, syntetisoivan käsitteen (supermegatrendit) esittäminen, jonka tekoäly omaksuu ja jatkojalostaa, osoittaa käyttäjän luovaa ja ohjaavaa vaikutusta prosessiin, mikä edustaa merkittävää oivallusta.",
+      "backing": "Tekoälyn myöhempi sisällöntuotanto perustuen tähän termiin vahvistaa käsitteen vaikutuksen ja merkityksen tehtävän lopputulokselle."
+    },
+    {
+      "vaite_id": "H4-argumentti",
+      "claim": "Tekoälyn alkuperäinen vastaus supermegatrendeistä oli liian laaja ja sitä piti supistaa ylätason näkemykseksi.",
+      "data": "Käyttäjän pyyntö 'tee kokonaisuudesta raportti, missä Supermegatrendit ovat pääosassa' sen jälkeen, kun tekoäly oli tuottanut yksityiskohtaisen listauksen, viittaa tarpeeseen tiivistää ja supistaa ylätason näkemykseksi, erityisesti 'kaupallisen liiketoiminnan johtoryhmälle' -kontekstissa.",
+      "warrant": "Tekoälyn tuotoksen arvioiminen suhteessa kohderyhmään ja käyttötarkoitukseen sekä sen mukainen tiivistämispyyntö osoittavat evaluatiivista kykyä ja adaptiivista ohjausta.",
+      "backing": "Kohderyhmän ('kaupallisen liiketoiminnan johtoryhmä') mainitseminen kehotteessa vahvistaa tarpeen ylätason, tiivistetylle esitykselle."
+    },
+    {
+      "vaite_id": "H7-argumentti",
+      "claim": "Käyttäjä muokkasi lopputuotetta poistamalla ja muuttamalla yksityiskohtia.",
+      "data": "Lopputuotteen ja tekoälyn viimeisen vastauksen vertailussa havaittavissa hienovaraisia eroavaisuuksia (ylimääräisiä rivinvaihtoja, välilyöntejä). Reflektiodokumentissa käyttäjä ilmoittaa 'muuttelin yksityiskohtia ja otin mielestäni asioita pois, jot ka eivät kuuluneet loppuraporttiin ja muutin myös tulosta'.",
+      "warrant": "Tekoälyn tuottaman sisällön aktiivinen muokkaus, vaikka se olisi vain hienosäätöä tai valikoivaa poistoa, osoittaa käyttäjän omaa toimijuutta ja kriittistä arviointia lopputuloksen suhteen.",
+      "backing": "Käyttäjän metakognitiivinen raportointi omista muokkauksistaan reflektiossa tukee tätä väitettä, vaikka näkyvät muutokset ovatkin vähäisiä."
+    }
+  ],
+  "kognitiivinen_taso": {
+    "bloom_taso": "Create",
+    "strateginen_syvyys": "Syvällinen"
+  },
+  "walton_skeema": {
+    "tunnistettu_skeema": "Argument from Practical Reasoning",
+    "kriittiset_kysymykset": [
+      "Ovatko käyttäjän valitsemat toimet ja ohjaukset tehokkaimpia ja tarkoituksenmukaisimpia annettujen tavoitteiden saavuttamiseksi?",
+      "Onko käyttäjä arvioinut toimintansa mahdollisia haittavaikutuksia tai vaihtoehtoisia strategioita?"
+    ]
+  }
+}
